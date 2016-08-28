@@ -6,16 +6,13 @@
  */
 
 //Standard
-#include <cstring>
+#include <string>
 
 //Boost
 //...
 
 //App
-#include <MtFIFO/FIFO.hpp>
 #include <MtFIFO/FIFODistributor.hpp>
-#include <MtFIFO/FIFOInput.hpp>
-#include <MtFIFO/FIFOOutput.hpp>
 
 //Start aplikacji
 int main() {

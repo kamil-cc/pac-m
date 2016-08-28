@@ -9,24 +9,17 @@
 #define GAME_INCLUDES_MTFIFO_FIFODISTRIBUTOR_HPP_
 
 //Standard
-#include <iostream>
-#include <cstring>
-#include <map>
-#include <typeinfo>
-#include <sys/types.h> //Wymagany przez semaphore
-//#include <semaphore.h>
+#include <string>
 
 //Boost
-//#include <boost/thread/mutex.hpp>
-#include <boost/log/trivial.hpp> //TODO Mo¿e nie jest potrzebny?
+//...
+
+//App
 #include <MtFIFO/FIFO.hpp>
 #include <MtFIFO/FIFOInput.hpp>
 #include <MtFIFO/FIFOOutput.hpp>
 
-//App
-
 using namespace std;
-using namespace boost::log::trivial;
 
 namespace mtfifo{
 
@@ -37,7 +30,7 @@ class FIFODistributor{
 private:
 	FIFODistributor();
 	FIFODistributor(FIFODistributor const&); //Pusty
-    void operator=(FIFODistributor const&); //Pusty //TODO zainicjalizowac semafor??? Mo¿e prowadzic do b³êdów
+    void operator=(FIFODistributor const&); //Pusty
 
 public:
 	virtual ~FIFODistributor();
@@ -48,8 +41,8 @@ public:
 	 * Argumentem funkcji jest nazwa kolejki.
 	 */
 	template<class IO> static FIFO<IO> getFIFO(const string& name){
-		FIFO<IO> fxb/*(name)*/; //New FIFO on stack
-		return fxb;
+		FIFO<IO> singleInstance_;
+		return singleInstance_;
 	}
 };
 
