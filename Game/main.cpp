@@ -79,8 +79,11 @@ int main() {
 
 	/*std::cout << "end" << std::endl;*/
 
+	loggingThread.interrupt();
 	loggingThread.join();
+	//fakeSender.interrupt();
 	fakeSender.join();
+	//fakeSender2.interrupt();
 	fakeSender2.join();
 	return 0;
 }

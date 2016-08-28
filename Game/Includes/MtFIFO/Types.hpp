@@ -8,7 +8,11 @@
 #ifndef GAME_INCLUDES_MTFIFO_TYPES_HPP_
 #define GAME_INCLUDES_MTFIFO_TYPES_HPP_
 
+//Std
 #include <string>
+
+//Boost
+#include <boost/log/trivial.hpp>
 
 namespace mtfifo{
 	struct StringElement{
@@ -19,6 +23,19 @@ namespace mtfifo{
 			value = copy.value;
 		}
 		std::string value;
+	};
+
+	struct LogElement{
+		LogElement(const std::string& elem, boost::log::trivial::severity_level lvl){
+			value = elem;
+			level = lvl;
+		}
+		LogElement(const LogElement& copy){
+			value = copy.value;
+			level = copy.level;
+		}
+		std::string value;
+		boost::log::trivial::severity_level level;
 	};
 }
 

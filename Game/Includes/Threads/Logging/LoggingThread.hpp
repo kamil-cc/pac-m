@@ -1,4 +1,4 @@
-/*
+/**
  * LoggingThread.hpp
  *
  *  Created on: 28 sie 2016
@@ -8,14 +8,13 @@
 #ifndef GAME_INCLUDES_THREADS_LOGGING_LOGGINGTHREAD_HPP_
 #define GAME_INCLUDES_THREADS_LOGGING_LOGGINGTHREAD_HPP_
 
-//Tmp
-#include <iostream>
-
 //Std
 #include <string>
+#include <iostream>
 
 //Boost
 #include <boost/any.hpp>
+#include <boost/log/trivial.hpp>
 #include <boost/none.hpp>
 
 //App
@@ -33,19 +32,24 @@ public:
 		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
 		mtfifo::FIFO<mtfifo::FIFOInput> input = fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_LOG);
 
-		for(int i = 0; i < 100; ++i){
-			boost::any elem = input.get();
-			try{
-				mtfifo::StringElement stringElement = boost::any_cast<mtfifo::StringElement>(elem);
-				std::cout << stringElement.value << std::endl;
-			}catch (boost::bad_any_cast &e){
+		try{
+			while(1){
+				boost::any elem = input.get();
 				try{
-					boost::any_cast<boost::none_t>(elem);
+					mtfifo::StringElement stringElement = boost::any_cast<mtfifo::StringElement>(elem);
+					BOOST_LOG_TRIVIAL(trace) << stringElement.value;
+					//std::cout << stringElement.value << std::endl;
 				}catch (boost::bad_any_cast &e){
-					assert(!"Unknown element type");
+					try{
+						boost::any_cast<boost::none_t>(elem);
+					}catch (boost::bad_any_cast &e){
+						assert(!"Unknown element type");
+					}
 				}
+				boost::this_thread::sleep_for(boost::chrono::seconds(1));
 			}
-			boost::this_thread::sleep_for(boost::chrono::seconds(1));
+		}catch (boost::thread_interrupted&){
+			//Koñcz g³ówn¹ pêtlê w¹tku
 		}
 	}
 };
