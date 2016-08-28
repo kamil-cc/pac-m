@@ -10,6 +10,7 @@
 
 //Standard
 #include <string>
+#include <map>
 
 //Boost
 #include <boost/thread/lock_guard.hpp>
@@ -18,6 +19,7 @@
 
 //App
 #include <MtFIFO/FIFO.hpp>
+#include <MtFIFO/FIFOImplementation.hpp>
 #include <MtFIFO/FIFOInput.hpp>
 #include <MtFIFO/FIFOOutput.hpp>
 
@@ -29,9 +31,13 @@ namespace mtfifo{
  * Dystrybutor kolejek fifo, singleton
  */
 class FIFODistributor : public boost::basic_lockable_adapter<boost::mutex>{
+	friend class FIFOInput;
+	friend class FIFOOutput;
 private:
-	FIFODistributor();
+	map<string, FIFOImplementation*> fifoMap_;
+	FIFODistributor(); //Pusty
 	FIFODistributor(FIFODistributor const&); //Pusty
+	FIFOImplementation* getImplementation(const string& name); //zabezpieczone guardem jak poni¿sza funkcja
 
 public:
 	virtual ~FIFODistributor();

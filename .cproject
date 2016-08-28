@@ -27,7 +27,6 @@
 								<option id="gnu.cpp.compiler.option.dialect.std.633153439" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.849477587" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1703246942" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;C:\SFML-2.3.2\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Game/Includes}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\boost_1_60_0&quot;"/>
 								</option>

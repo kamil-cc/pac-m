@@ -10,22 +10,28 @@
 
 #include <MtFIFO/FIFODistributor.hpp>
 
-namespace mtfifo {
-
-FIFODistributor::FIFODistributor() {
+mtfifo::FIFODistributor::FIFODistributor(){
 }
 
-FIFODistributor::~FIFODistributor() {
+mtfifo::FIFODistributor::~FIFODistributor(){
+	//TODO for all in map free memory and remove from map's
+}
+
+mtfifo::FIFOImplementation* mtfifo::FIFODistributor::getImplementation(const string& name){
+	boost::lock_guard<FIFODistributor> guard(*this);
+	if (fifoMap_.find(name) == fifoMap_.end()){
+		fifoMap_.insert(pair<string, FIFOImplementation*>(name, new FIFOImplementation()));
+	}
+	//zwróc istniej¹cy element
+	return NULL;
 }
 
 /*
  * Pobieranie jedynej instancji klasy
  */
-FIFODistributor& FIFODistributor::getInstance(){
+mtfifo::FIFODistributor& mtfifo::FIFODistributor::getInstance(){
 	static FIFODistributor instance;
 	return instance;
-}
-
 }
 
 #endif /* GAME_MSGFIFO_MSGFIFO_HPP_ */
