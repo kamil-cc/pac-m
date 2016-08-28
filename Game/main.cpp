@@ -12,17 +12,20 @@
 //...
 
 //App
+#include <MtFIFO/FIFO.hpp>
 #include <MtFIFO/FIFODistributor.hpp>
 #include <MtFIFO/FIFOInput.hpp>
 #include <MtFIFO/FIFOOutput.hpp>
 
+using namespace mtfifo;
+
 //Start aplikacji
 int main() {
 
-	mtfifo::FIFODistributor& FIFODistributor = mtfifo::FIFODistributor::getInstance();
-	FIFODistributor.getFIFO<mtfifo::FIFOInput>("000");
-	//FIFODistributor.getFIFO<mtfifo::FIFOOutput>("000");
-	//FIFODistributor.getFIFO<mtfifo::FIFOInput>("001");
+	FIFODistributor& FIFODistributor = FIFODistributor::getInstance();
+	FIFO<FIFOInput> input = FIFODistributor.getFIFO<FIFOInput>("000");
+	FIFO<FIFOOutput> output = FIFODistributor.getFIFO<FIFOOutput>("000");
+	FIFO<FIFOInput> input2 = FIFODistributor.getFIFO<FIFOInput>("001");
 
 	return 0;
 }

@@ -9,15 +9,10 @@
 #define GAME_INCLUDES_MTFIFO_FIFOINPUT_HPP_
 
 //Standard
-#include <MtFIFO/FIFOIOSeparator.hpp>
-#include <iostream>
-#include <cstring>
-#include <sys/types.h>
-//#include <semaphore.h>
-#include <queue>
+//
 
 //App
-
+...
 using namespace std;
 
 namespace mtfifo{
