@@ -34,10 +34,10 @@ class FIFODistributor : public boost::basic_lockable_adapter<boost::mutex>{
 	friend class FIFOInput;
 	friend class FIFOOutput;
 private:
-	map<string, FIFOImplementation*> fifoMap_;
+	map<string, const FIFOImplementation*> fifoMap_;
 	FIFODistributor(); //Pusty
 	FIFODistributor(FIFODistributor const&); //Pusty
-	FIFOImplementation* getImplementation(const string& name); //zabezpieczone guardem jak poni¿sza funkcja
+	const FIFOImplementation* getImplementation(const string& name); //zabezpieczone guardem jak poni¿sza funkcja
 
 public:
 	virtual ~FIFODistributor();
