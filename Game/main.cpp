@@ -35,26 +35,31 @@ int main() {
 	std::cout<< output.size() << std::endl;
 
 	//POD - plain old data
-	class o{
-	public:
-		int b;
-		o(){
-			b = 13;
-		}
-		o(const o& a){
-			b = a.b;
-		}
+	struct Ex2 {
+	    int n;
+	    Ex2(){}
+	    Ex2(const Ex2&) = default; // trivial and non-throwing
 	};
 
-	o oo;
+	Ex2 ex2;
+	ex2.n = 13;
 
-	//fifo_t aa = oo;
+	fifo_t aa = ex2;
 
-	//output.put(a);
+	output.put(a);
 
-	//o io = fifo_t_cast<o>(input.get());
+	fifo_t t = input.get();
 
-	//std::cout<< io.b << std::endl;
+	try{
+		boost::any_cast<Ex2>(t);
+	}catch (boost::bad_any_cast &e){
+		std::cout << "Bad casting " << std::endl;
+	}
+
+
+	//Ex2 io = boost::any_cast<Ex2>(t);
+
+	//std::cout<< io.n << std::endl;
 
 	return 0;
 }
