@@ -8,6 +8,9 @@
 #ifndef GAME_INCLUDES_MTFIFO_FIFO_HPP_
 #define GAME_INCLUDES_MTFIFO_FIFO_HPP_
 
+//Std
+#include <string>
+
 using namespace std;
 
 namespace mtfifo{

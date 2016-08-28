@@ -8,7 +8,7 @@
 #ifndef GAME_INCLUDES_MTFIFO_FIFODISTRIBUTOR_HPP_
 #define GAME_INCLUDES_MTFIFO_FIFODISTRIBUTOR_HPP_
 
-//Standard
+//Std
 #include <string>
 #include <map>
 
