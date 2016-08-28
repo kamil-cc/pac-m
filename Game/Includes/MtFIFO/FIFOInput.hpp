@@ -8,12 +8,18 @@
 #ifndef GAME_INCLUDES_MTFIFO_FIFOINPUT_HPP_
 #define GAME_INCLUDES_MTFIFO_FIFOINPUT_HPP_
 
+#include <string>
+#include <boost/any.hpp>
+
 namespace mtfifo{
 
 class FIFOInput{
 public:
-	FIFOInput();
+	FIFOInput(const std::string& name);
 	virtual ~FIFOInput();
+	boost::any get();
+	void put(boost::any elem);
+	size_t size();
 };
 
 }

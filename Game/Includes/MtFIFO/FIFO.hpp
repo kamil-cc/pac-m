@@ -14,10 +14,11 @@ namespace mtfifo{
 
 template <class IO> class FIFO {
 public:
-	FIFO(){};
+	FIFO(const std::string& name) : io_fifo_(name){};
 	virtual ~FIFO(){};
-	inline void put() {io_fifo_.put();}; //Wrappery typu inline
-	inline void get() {io_fifo_.get();};
+	inline void put() {io_fifo_.put();} //Wrappery typu inline
+	inline void get() {io_fifo_.get();}
+	inline size_t size(){return io_fifo_.size();}
 private:
 	IO io_fifo_;
 };

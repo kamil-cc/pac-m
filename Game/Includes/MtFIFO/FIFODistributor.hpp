@@ -43,7 +43,7 @@ public:
 	 */
 	template<class IO> FIFO<IO> getFIFO(const string& name){
 		boost::lock_guard<FIFODistributor> guard(*this);
-		FIFO<IO> fifo_;
+		FIFO<IO> fifo_(name);
 		return fifo_;
 	}
 };

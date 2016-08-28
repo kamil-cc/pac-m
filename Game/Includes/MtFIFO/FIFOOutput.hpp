@@ -8,12 +8,18 @@
 #ifndef GAME_INCLUDES_MTFIFO_FIFOOUTPUT_HPP_
 #define GAME_INCLUDES_MTFIFO_FIFOOUTPUT_HPP_
 
+#include <string>
+#include <boost/any.hpp>
+
 namespace mtfifo{
 
 class FIFOOutput{
 public:
-	FIFOOutput();
+	FIFOOutput(const std::string& name);
 	virtual ~FIFOOutput();
+	boost::any get();
+	void put(boost::any elem);
+	size_t size();
 };
 
 }
