@@ -37,7 +37,6 @@
 								<option id="gnu.c.compiler.mingw.exe.debug.option.debugging.level.1820895378" name="Debug Level" superClass="gnu.c.compiler.mingw.exe.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.include.paths.363708730" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;C:\boost_1_60_0&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\SFML-2.3.2\include&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1047522354" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
