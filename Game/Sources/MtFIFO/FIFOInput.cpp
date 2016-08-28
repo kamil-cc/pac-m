@@ -15,11 +15,11 @@ mtfifo::FIFOInput::FIFOInput(const std::string& name){
 mtfifo::FIFOInput::~FIFOInput(){
 }
 
-boost::any mtfifo::FIFOInput::get(){
+fifo_t mtfifo::FIFOInput::get(){
 	return impl_->get();
 }
 
-void mtfifo::FIFOInput::put(boost::any elem){
+void mtfifo::FIFOInput::put(fifo_t elem){
 	//Nie podejmujemy ¿adnej akcji w przypadku pisania do koleji wejœciowej
 }
 

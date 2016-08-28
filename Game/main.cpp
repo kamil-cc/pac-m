@@ -24,13 +24,37 @@ int main() {
 	FIFO<FIFOOutput> output = fifoDistributor.getFIFO<FIFOOutput>("000");
 	FIFO<FIFOInput> input2 = fifoDistributor.getFIFO<FIFOInput>("001");
 
+#include <CommonTypes.hpp>
 #include <boost/any.hpp>
-	boost::any a = input.get();
-	boost::any any = 12;
+#include <boost/none.hpp>
+	fifo_t a = input.get();
+	fifo_t any = 12;
 	output.put(any);
 	std::cout<< output.size() << std::endl;
 	std::cout<< boost::any_cast<int>(input.get()) << std::endl;
 	std::cout<< output.size() << std::endl;
+
+	//POD - plain old data
+	class o{
+	public:
+		int b;
+		o(){
+			b = 13;
+		}
+		o(const o& a){
+			b = a.b;
+		}
+	};
+
+	o oo;
+
+	//fifo_t aa = oo;
+
+	//output.put(a);
+
+	//o io = fifo_t_cast<o>(input.get());
+
+	//std::cout<< io.b << std::endl;
 
 	return 0;
 }
