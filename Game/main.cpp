@@ -27,7 +27,7 @@ int main() {
 	FIFO<FIFOOutput> output = FIFODistributor.getFIFO<FIFOOutput>("000");
 	FIFO<FIFOInput> input2 = FIFODistributor.getFIFO<FIFOInput>("001");
 
-	//input.get();
+//	input.get();
 
 	return 0;
 }
