@@ -9,17 +9,14 @@
 
 mtfifo::FIFOInput::FIFOInput(const std::string& name){
 	FIFODistributor& fifoDistributor = FIFODistributor::getInstance();
-	fifoDistributor.getImplementation(name);
+	impl_ = const_cast<FIFOImplementation*>(fifoDistributor.getImplementation(name));
 }
 
 mtfifo::FIFOInput::~FIFOInput(){
-
 }
 
 boost::any mtfifo::FIFOInput::get(){
-	boost::any any;
-	//TODO zaimplementowac
-	return any;
+	return impl_->get();
 }
 
 void mtfifo::FIFOInput::put(boost::any elem){
@@ -27,5 +24,5 @@ void mtfifo::FIFOInput::put(boost::any elem){
 }
 
 size_t mtfifo::FIFOInput::size(){
-	return 0;
+	return impl_->size();
 }

@@ -9,22 +9,21 @@
 
 mtfifo::FIFOOutput::FIFOOutput(const std::string& name){
 	FIFODistributor& fifoDistributor = FIFODistributor::getInstance();
-	fifoDistributor.getImplementation(name);
+	impl_ = const_cast<FIFOImplementation*>(fifoDistributor.getImplementation(name));
 }
 
 mtfifo::FIFOOutput::~FIFOOutput(){
-
 }
 
 boost::any mtfifo::FIFOOutput::get(){
 	boost::any any;
-	return any; //Zwracamy pusty element
+	return any; //Zwracamy pusty element, nie mo¿na pobrac elementu z kolejki wyjœciowej
 }
 
 void mtfifo::FIFOOutput::put(boost::any elem){
-	;//TODO zaimplementowac
+	impl_->put(elem);
 }
 
 size_t mtfifo::FIFOOutput::size(){
-	return 0;
+	return impl_->size();
 }

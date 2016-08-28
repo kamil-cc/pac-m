@@ -18,8 +18,11 @@ mtfifo::FIFOImplementation::~FIFOImplementation(){
 
 boost::any mtfifo::FIFOImplementation::get(){
 	boost::lock_guard<FIFOImplementation> guard(*this);
-	boost::any any = queue_.front();
-	queue_.pop();
+	boost::any any;
+	if(queue_.size() != 0){
+		any = queue_.front();
+		queue_.pop();
+	}
 	return any;
 }
 

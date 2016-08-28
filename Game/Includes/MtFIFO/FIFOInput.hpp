@@ -28,7 +28,7 @@ public:
 	void put(boost::any elem);
 	size_t size();
 private:
-	/*const*/ FIFOImplementation* impl_; //TODO zastanowic siê nad const
+	FIFOImplementation* impl_;
 };
 
 }
