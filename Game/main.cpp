@@ -5,11 +5,8 @@
  *      Author: Kamil Burzyñski
  */
 
-//Standard
+//Std
 #include <string>
-
-//Boost
-//...
 
 //App
 #include <MtFIFO/FIFO.hpp>
@@ -27,7 +24,13 @@ int main() {
 	FIFO<FIFOOutput> output = fifoDistributor.getFIFO<FIFOOutput>("000");
 	FIFO<FIFOInput> input2 = fifoDistributor.getFIFO<FIFOInput>("001");
 
-	input.get();
+#include <boost/any.hpp>
+	boost::any a = input.get();
+	boost::any any = 12;
+	output.put(any);
+	std::cout<< output.size() << std::endl;
+	std::cout<< boost::any_cast<int>(input.get()) << std::endl;
+	std::cout<< output.size() << std::endl;
 
 	return 0;
 }
