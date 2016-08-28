@@ -74,9 +74,13 @@ int main() {
 	FakeSender send;
 	boost::thread fakeSender(send);
 
+	FakeSender send2;
+	boost::thread fakeSender2(send2);
+
 	/*std::cout << "end" << std::endl;*/
 
 	loggingThread.join();
 	fakeSender.join();
+	fakeSender2.join();
 	return 0;
 }
