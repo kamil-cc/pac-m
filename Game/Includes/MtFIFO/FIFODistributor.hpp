@@ -18,6 +18,7 @@
 
 //App
 #include <MtFIFO/FIFO.hpp>
+#include <MtFIFO/FIFOBase.hpp>
 #include <MtFIFO/FIFOInput.hpp>
 #include <MtFIFO/FIFOOutput.hpp>
 
