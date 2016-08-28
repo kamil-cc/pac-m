@@ -10,6 +10,9 @@
 mtfifo::FIFOInput::FIFOInput(const std::string& name){
 	FIFODistributor& fifoDistributor = FIFODistributor::getInstance();
 	impl_ = const_cast<FIFOImplementation*>(fifoDistributor.getImplementation(name));
+	if(!impl_->isInputAvailable())
+		assert(!"More than one input queue with the same name");
+	impl_->setUnavailable();
 }
 
 mtfifo::FIFOInput::~FIFOInput(){

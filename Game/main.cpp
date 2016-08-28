@@ -8,26 +8,33 @@
 //Std
 #include <string>
 
+//Boost
+#include <boost/thread.hpp>
+
 //App
-#include <MtFIFO/FIFO.hpp>
-#include <MtFIFO/FIFODistributor.hpp>
-#include <MtFIFO/FIFOInput.hpp>
-#include <MtFIFO/FIFOOutput.hpp>
+//#include <MtFIFO/FIFO.hpp>
+//#include <MtFIFO/FIFODistributor.hpp>
+//#include <MtFIFO/FIFOInput.hpp>
+//#include <MtFIFO/FIFOOutput.hpp>
+#include <MtFIFO/Names.hpp>
+#include <Threads/Logging/LoggingThread.hpp>
 
-//Del
+//Tmp
 #include <iostream>
+#include <Threads/FakeSender/FakeSender.hpp>
 
-using namespace mtfifo;
+//using namespace mtfifo;
+using namespace thd;
 
 //Start aplikacji
 int main() {
 
-	FIFODistributor& fifoDistributor = FIFODistributor::getInstance();
-	FIFO<FIFOInput> input = fifoDistributor.getFIFO<FIFOInput>("000");
-	FIFO<FIFOOutput> output = fifoDistributor.getFIFO<FIFOOutput>("000");
-	FIFO<FIFOInput> input2 = fifoDistributor.getFIFO<FIFOInput>("001");
+	//FIFODistributor& fifoDistributor = FIFODistributor::getInstance();
+	//FIFO<FIFOInput> input = fifoDistributor.getFIFO<FIFOInput>(FIFO_LOG);
+	//FIFO<FIFOOutput> output = fifoDistributor.getFIFO<FIFOOutput>(FIFO_LOG);
+	//FIFO<FIFOInput> input2 = fifoDistributor.getFIFO<FIFOInput>("001");
 
-#include <boost/any.hpp>
+/*#include <boost/any.hpp>
 #include <boost/none.hpp>
 	//POD - plain old data
 	struct Ex2 {
@@ -39,9 +46,11 @@ int main() {
 	Ex2 ex2;
 	ex2.n = 13;
 
-	boost::any aa = ex2;
+	boost::any aa = ex2;*/
 
-	output.put(aa);
+
+
+/*	output.put(aa);
 
 	for(int i = 0; i < 2; ++i){
 		boost::any t = input.get();
@@ -58,6 +67,16 @@ int main() {
 			std::cout << "Bad casting " << std::endl;
 		}
 	}
+*/
+	LoggingThread log;
+	boost::thread loggingThread(log);
 
+	FakeSender send;
+	boost::thread fakeSender(send);
+
+	/*std::cout << "end" << std::endl;*/
+
+	loggingThread.join();
+	fakeSender.join();
 	return 0;
 }

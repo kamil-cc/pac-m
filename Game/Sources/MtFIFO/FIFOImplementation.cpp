@@ -9,7 +9,7 @@
 
 size_t mtfifo::FIFOImplementation::MAX_QUEUE_SIZE = 1024; //Arbitralnie dobrana wielkoœc
 
-mtfifo::FIFOImplementation::FIFOImplementation(){
+mtfifo::FIFOImplementation::FIFOImplementation() : available_(true){
 }
 
 mtfifo::FIFOImplementation::~FIFOImplementation(){
@@ -36,4 +36,14 @@ void mtfifo::FIFOImplementation::put(boost::any elem){
 size_t mtfifo::FIFOImplementation::size(){
 	boost::lock_guard<FIFOImplementation> guard(*this);
 	return queue_.size();
+}
+
+bool mtfifo::FIFOImplementation::isInputAvailable(){
+	boost::lock_guard<FIFOImplementation> guard(*this);
+	return available_;
+}
+
+void  mtfifo::FIFOImplementation::setUnavailable(){
+	boost::lock_guard<FIFOImplementation> guard(*this);
+	available_ = false;
 }
