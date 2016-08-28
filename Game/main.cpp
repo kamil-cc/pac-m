@@ -14,6 +14,10 @@
 #include <MtFIFO/FIFOInput.hpp>
 #include <MtFIFO/FIFOOutput.hpp>
 
+//Del
+#include <typeinfo>
+#include <iostream>
+
 using namespace mtfifo;
 
 //Start aplikacji
@@ -46,12 +50,15 @@ int main() {
 
 	fifo_t aa = ex2;
 
-	output.put(a);
+	output.put(aa);
 
 	fifo_t t = input.get();
 
 	try{
-		boost::any_cast<Ex2>(t);
+	    const std::type_info &ti = t.type();
+	    std::cout << ti.name() << '\n';
+		Ex2 ee = boost::any_cast<Ex2>(t);
+		std::cout <<  ee.n << std::endl;
 	}catch (boost::bad_any_cast &e){
 		std::cout << "Bad casting " << std::endl;
 	}
