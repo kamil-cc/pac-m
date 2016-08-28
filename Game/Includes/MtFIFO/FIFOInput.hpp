@@ -8,28 +8,12 @@
 #ifndef GAME_INCLUDES_MTFIFO_FIFOINPUT_HPP_
 #define GAME_INCLUDES_MTFIFO_FIFOINPUT_HPP_
 
-//Standard
-//
-
-//App
-...
-using namespace std;
-
 namespace mtfifo{
 
 class FIFOInput{
 public:
-	FIFOInput(){
-		//FifoIOSeparator& fifoIOSeparator = FifoIOSeparator::getInstance();
-		//fifoIOSeparator.getFIFO(this, name);
-	}
-
-	virtual ~FIFOInput(){
-
-	}
-private:
-	//sem_t& semaphore;
-	//queue<T>* dataFIFO;*/
+	FIFOInput();
+	virtual ~FIFOInput();
 };
 
 }

@@ -16,8 +16,8 @@ template <class IO> class FIFO {
 public:
 	FIFO(){};
 	virtual ~FIFO(){};
-	inline void put() {io_fifo_.get();}; //Wrappery typu inline
-	inline void get() {io_fifo_.put();};
+	inline void put() {io_fifo_.put();}; //Wrappery typu inline
+	inline void get() {io_fifo_.get();};
 private:
 	IO io_fifo_;
 };
