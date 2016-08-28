@@ -13,14 +13,16 @@
 
 //App
 #include <MtFIFO/FIFODistributor.hpp>
+#include <MtFIFO/FIFOInput.hpp>
+#include <MtFIFO/FIFOOutput.hpp>
 
 //Start aplikacji
 int main() {
 
 	mtfifo::FIFODistributor& FIFODistributor = mtfifo::FIFODistributor::getInstance();
 	FIFODistributor.getFIFO<mtfifo::FIFOInput>("000");
-	FIFODistributor.getFIFO<mtfifo::FIFOOutput>("000");
-	FIFODistributor.getFIFO<mtfifo::FIFOInput>("001");
+	//FIFODistributor.getFIFO<mtfifo::FIFOOutput>("000");
+	//FIFODistributor.getFIFO<mtfifo::FIFOInput>("001");
 
 	return 0;
 }

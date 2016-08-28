@@ -8,7 +8,6 @@
 #ifndef GAME_INCLUDES_MTFIFO_FIFOOUTPUT_HPP_
 #define GAME_INCLUDES_MTFIFO_FIFOOUTPUT_HPP_
 
-#include <MtFIFO/FIFOBase.hpp>
 #include <iosfwd>
 #include <cstring>
 
@@ -16,7 +15,7 @@
 
 namespace mtfifo{
 
-class FIFOOutput : public FIFOBase{
+class FIFOOutput{
 public:
 	FIFOOutput(){
 

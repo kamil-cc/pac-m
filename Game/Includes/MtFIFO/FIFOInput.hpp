@@ -9,7 +9,6 @@
 #define GAME_INCLUDES_MTFIFO_FIFOINPUT_HPP_
 
 //Standard
-#include <MtFIFO/FIFOBase.hpp>
 #include <MtFIFO/FIFOIOSeparator.hpp>
 #include <iostream>
 #include <cstring>
@@ -23,7 +22,7 @@ using namespace std;
 
 namespace mtfifo{
 
-class FIFOInput : public FIFOBase{
+class FIFOInput{
 public:
 	FIFOInput(){
 		//FifoIOSeparator& fifoIOSeparator = FifoIOSeparator::getInstance();
