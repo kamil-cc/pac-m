@@ -45,8 +45,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.mingw.exe.debug.2106391784" name="MinGW C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.mingw.exe.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.exe.debug.1485105690" name="MinGW C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.exe.debug">
 								<option id="gnu.cpp.link.option.libs.500994893" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="sfml-audio-d"/>
-									<listOptionValue builtIn="false" value="sfml-system-d"/>
 									<listOptionValue builtIn="false" value="boost_atomic-mgw49-mt-d-1_60"/>
 									<listOptionValue builtIn="false" value="boost_chrono-mgw49-mt-d-1_60"/>
 									<listOptionValue builtIn="false" value="boost_container-mgw49-mt-d-1_60"/>
@@ -82,14 +80,9 @@
 									<listOptionValue builtIn="false" value="boost_unit_test_framework-mgw49-mt-d-1_60"/>
 									<listOptionValue builtIn="false" value="boost_wave-mgw49-mt-d-1_60"/>
 									<listOptionValue builtIn="false" value="boost_wserialization-mgw49-mt-d-1_60"/>
-									<listOptionValue builtIn="false" value="sfml-window-d"/>
-									<listOptionValue builtIn="false" value="sfml-graphics-d"/>
-									<listOptionValue builtIn="false" value="sfml-main-d"/>
-									<listOptionValue builtIn="false" value="sfml-network-d"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.282771954" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;C:\boost_1_60_0\stage\lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\SFML-2.3.2\lib&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1831209159" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
