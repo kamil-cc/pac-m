@@ -18,8 +18,8 @@ FIFODistributor::FIFODistributor() {
 FIFODistributor::~FIFODistributor() {
 }
 
-/**
- * Pobieranie jedynej instancji klasy.
+/*
+ * Pobieranie jedynej instancji klasy
  */
 FIFODistributor& FIFODistributor::getInstance(){
 	static FIFODistributor instance;

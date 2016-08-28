@@ -12,7 +12,9 @@
 #include <string>
 
 //Boost
-//...
+#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/lockable_adapter.hpp>
+#include <boost/thread/mutex.hpp>
 
 //App
 #include <MtFIFO/FIFO.hpp>
@@ -26,11 +28,10 @@ namespace mtfifo{
 /**
  * Dystrybutor kolejek fifo, singleton
  */
-class FIFODistributor{
+class FIFODistributor : public boost::basic_lockable_adapter<boost::mutex>{
 private:
 	FIFODistributor();
 	FIFODistributor(FIFODistributor const&); //Pusty
-    void operator=(FIFODistributor const&); //Pusty
 
 public:
 	virtual ~FIFODistributor();
@@ -40,9 +41,10 @@ public:
 	 * czy "wyjœciowa" (output).
 	 * Argumentem funkcji jest nazwa kolejki.
 	 */
-	template<class IO> static FIFO<IO> getFIFO(const string& name){
-		FIFO<IO> singleInstance_;
-		return singleInstance_;
+	template<class IO> FIFO<IO> getFIFO(const string& name){
+		boost::lock_guard<FIFODistributor> guard(*this);
+		FIFO<IO> fifo_;
+		return fifo_;
 	}
 };
 
