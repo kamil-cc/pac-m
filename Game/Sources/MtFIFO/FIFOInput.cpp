@@ -8,7 +8,8 @@
 #include <MtFIFO/FIFOInput.hpp>
 
 mtfifo::FIFOInput::FIFOInput(const std::string& name){
-
+	FIFODistributor& fifoDistributor = FIFODistributor::getInstance();
+	fifoDistributor.getImplementation(name);
 }
 
 mtfifo::FIFOInput::~FIFOInput(){

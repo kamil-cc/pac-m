@@ -15,7 +15,7 @@
 //Boost
 #include <boost/thread/lock_guard.hpp>
 #include <boost/thread/lockable_adapter.hpp>
-#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
 //App
 #include <MtFIFO/FIFO.hpp>
@@ -30,7 +30,7 @@ namespace mtfifo{
 /**
  * Dystrybutor kolejek fifo, singleton
  */
-class FIFODistributor : public boost::basic_lockable_adapter<boost::mutex>{
+class FIFODistributor : public boost::basic_lockable_adapter<boost::recursive_mutex>{
 	friend class FIFOInput;
 	friend class FIFOOutput;
 private:

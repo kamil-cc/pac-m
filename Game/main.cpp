@@ -22,10 +22,10 @@ using namespace mtfifo;
 //Start aplikacji
 int main() {
 
-	FIFODistributor& FIFODistributor = FIFODistributor::getInstance();
-	FIFO<FIFOInput> input = FIFODistributor.getFIFO<FIFOInput>("000");
-	FIFO<FIFOOutput> output = FIFODistributor.getFIFO<FIFOOutput>("000");
-	FIFO<FIFOInput> input2 = FIFODistributor.getFIFO<FIFOInput>("001");
+	FIFODistributor& fifoDistributor = FIFODistributor::getInstance();
+	FIFO<FIFOInput> input = fifoDistributor.getFIFO<FIFOInput>("000");
+	FIFO<FIFOOutput> output = fifoDistributor.getFIFO<FIFOOutput>("000");
+	FIFO<FIFOInput> input2 = fifoDistributor.getFIFO<FIFOInput>("001");
 
 	input.get();
 

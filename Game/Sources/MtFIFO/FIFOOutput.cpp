@@ -8,7 +8,8 @@
 #include <MtFIFO/FIFOOutput.hpp>
 
 mtfifo::FIFOOutput::FIFOOutput(const std::string& name){
-
+	FIFODistributor& fifoDistributor = FIFODistributor::getInstance();
+	fifoDistributor.getImplementation(name);
 }
 
 mtfifo::FIFOOutput::~FIFOOutput(){

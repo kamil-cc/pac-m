@@ -14,6 +14,10 @@
 //Boost
 #include <boost/any.hpp>
 
+//App
+#include <MtFIFO/FIFODistributor.hpp>
+#include <MtFIFO/FIFOImplementation.hpp>
+
 namespace mtfifo{
 
 class FIFOOutput{
@@ -23,6 +27,8 @@ public:
 	boost::any get();
 	void put(boost::any elem);
 	size_t size();
+private:
+	/*const*/ FIFOImplementation* impl_; //TODO zastanowic siê nad const
 };
 
 }
