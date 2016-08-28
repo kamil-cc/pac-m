@@ -55,10 +55,12 @@ int main() {
 	fifo_t t = input.get();
 
 	try{
-	    const std::type_info &ti = t.type();
-	    std::cout << ti.name() << '\n';
-		Ex2 ee = boost::any_cast<Ex2>(t);
-		std::cout <<  ee.n << std::endl;
+		if(!t.empty()){
+			const std::type_info &ti = t.type();
+	    	std::cout << ti.name() << '\n';
+			Ex2 ee = boost::any_cast<Ex2>(t);
+			std::cout <<  ee.n << std::endl;
+		}
 	}catch (boost::bad_any_cast &e){
 		std::cout << "Bad casting " << std::endl;
 	}
