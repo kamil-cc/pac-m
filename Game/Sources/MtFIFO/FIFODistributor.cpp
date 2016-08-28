@@ -33,7 +33,7 @@ const mtfifo::FIFOImplementation* mtfifo::FIFODistributor::getImplementation(con
 /*
  * Pobieranie jedynej instancji klasy
  */
-mtfifo::FIFODistributor& mtfifo::FIFODistributor::getInstance(){
+mtfifo::FIFODistributor& mtfifo::FIFODistributor::getInstance(){ //TODO potencjalne niebezpieczeñstwo dostêpu wspó³bie¿nego
 	static FIFODistributor instance;
 	return instance;
 }

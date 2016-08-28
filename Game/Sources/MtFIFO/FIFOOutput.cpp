@@ -7,8 +7,6 @@
 
 #include <MtFIFO/FIFOOutput.hpp>
 
-#include <boost/none.hpp>
-
 mtfifo::FIFOOutput::FIFOOutput(const std::string& name){
 
 }
@@ -18,11 +16,12 @@ mtfifo::FIFOOutput::~FIFOOutput(){
 }
 
 boost::any mtfifo::FIFOOutput::get(){
-	return boost::none;
+	boost::any any;
+	return any; //Zwracamy pusty element
 }
 
 void mtfifo::FIFOOutput::put(boost::any elem){
-	;
+	;//TODO zaimplementowac
 }
 
 size_t mtfifo::FIFOOutput::size(){

@@ -7,8 +7,6 @@
 
 #include <MtFIFO/FIFOInput.hpp>
 
-#include <boost/none.hpp>
-
 mtfifo::FIFOInput::FIFOInput(const std::string& name){
 
 }
@@ -18,11 +16,13 @@ mtfifo::FIFOInput::~FIFOInput(){
 }
 
 boost::any mtfifo::FIFOInput::get(){
-	return boost::none;
+	boost::any any;
+	//TODO zaimplementowac
+	return any;
 }
 
 void mtfifo::FIFOInput::put(boost::any elem){
-	;
+	//Nie podejmujemy ¿adnej akcji w przypadku pisania do koleji wejœciowej
 }
 
 size_t mtfifo::FIFOInput::size(){
