@@ -15,7 +15,6 @@
 #include <boost/any.hpp>
 
 //App
-#include <CommonTypes.hpp>
 #include <MtFIFO/FIFODistributor.hpp>
 #include <MtFIFO/FIFOImplementation.hpp>
 
@@ -25,8 +24,8 @@ class FIFOOutput{
 public:
 	FIFOOutput(const std::string& name);
 	virtual ~FIFOOutput();
-	fifo_t get();
-	void put(fifo_t elem);
+	boost::any get();
+	void put(boost::any elem);
 	size_t size();
 private:
 	FIFOImplementation* impl_;

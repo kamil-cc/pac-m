@@ -28,11 +28,10 @@ int main() {
 	FIFO<FIFOOutput> output = fifoDistributor.getFIFO<FIFOOutput>("000");
 	FIFO<FIFOInput> input2 = fifoDistributor.getFIFO<FIFOInput>("001");
 
-#include <CommonTypes.hpp>
 #include <boost/any.hpp>
 #include <boost/none.hpp>
-	fifo_t a = input.get();
-	fifo_t any = 12;
+	boost::any a = input.get();
+	boost::any any = 12;
 	output.put(any);
 	std::cout<< output.size() << std::endl;
 	std::cout<< boost::any_cast<int>(input.get()) << std::endl;
@@ -42,17 +41,17 @@ int main() {
 	struct Ex2 {
 	    int n;
 	    Ex2(){}
-	    Ex2(const Ex2&) = default; // trivial and non-throwing
+	    Ex2(const Ex2& m){n = m.n;} // trivial and non-throwing
 	};
 
 	Ex2 ex2;
 	ex2.n = 13;
 
-	fifo_t aa = ex2;
+	boost::any aa = ex2;
 
 	output.put(aa);
 
-	fifo_t t = input.get();
+	boost::any t = input.get();
 
 	try{
 		if(!t.empty()){

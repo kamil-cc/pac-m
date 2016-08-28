@@ -15,12 +15,12 @@ mtfifo::FIFOOutput::FIFOOutput(const std::string& name){
 mtfifo::FIFOOutput::~FIFOOutput(){
 }
 
-fifo_t mtfifo::FIFOOutput::get(){
-	fifo_t any;
+boost::any mtfifo::FIFOOutput::get(){
+	boost::any any;
 	return any; //Zwracamy pusty element, nie mo¿na pobrac elementu z kolejki wyjœciowej
 }
 
-void mtfifo::FIFOOutput::put(fifo_t elem){
+void mtfifo::FIFOOutput::put(boost::any elem){
 	impl_->put(elem);
 }
 

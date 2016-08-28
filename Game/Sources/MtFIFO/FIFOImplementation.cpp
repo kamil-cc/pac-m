@@ -16,9 +16,9 @@ mtfifo::FIFOImplementation::~FIFOImplementation(){
 
 }
 
-fifo_t mtfifo::FIFOImplementation::get(){
+boost::any mtfifo::FIFOImplementation::get(){
 	boost::lock_guard<FIFOImplementation> guard(*this);
-	fifo_t any = boost::none;
+	boost::any any = boost::none;
 	if(queue_.size() != 0){
 		any = queue_.front();
 		queue_.pop();
@@ -26,7 +26,7 @@ fifo_t mtfifo::FIFOImplementation::get(){
 	return any;
 }
 
-void mtfifo::FIFOImplementation::put(fifo_t elem){
+void mtfifo::FIFOImplementation::put(boost::any elem){
 	boost::lock_guard<FIFOImplementation> guard(*this);
 	if(queue_.size() > MAX_QUEUE_SIZE)
 		assert(!"Queue is too big"); //zabezpieczenie

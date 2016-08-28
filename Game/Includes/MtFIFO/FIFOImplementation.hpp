@@ -18,9 +18,6 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/none.hpp>
 
-//App
-#include <CommonTypes.hpp>
-
 using namespace std;
 
 namespace mtfifo{
@@ -29,12 +26,12 @@ class FIFOImplementation : public boost::basic_lockable_adapter<boost::mutex>{
 public:
 	FIFOImplementation();
 	virtual ~FIFOImplementation();
-	fifo_t get();
-	void put(fifo_t elem);
+	boost::any get();
+	void put(boost::any elem);
 	size_t size();
 private:
 	static size_t MAX_QUEUE_SIZE;
-	queue<fifo_t> queue_;
+	queue<boost::any> queue_;
 };
 
 }
