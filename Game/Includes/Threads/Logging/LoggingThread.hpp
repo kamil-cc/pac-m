@@ -45,10 +45,7 @@ namespace thd{
 class LoggingThread{
 public:
 	void loggingInit(){//TODO Wyrzucic treœc do pliku .cpp
-		//string ssi = "ALC";
-		//boost::log::add_file_log(boost::log::keywords::file_name = "xxy.log");
-		//boost::log::core::get()->set_filter(boost::log::trivial::severity
-		//		>= boost::log::trivial::info);
+		//TODO
 	}
 
 	void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
@@ -60,7 +57,7 @@ public:
 			boost::any elem = input.get();
 			try{
 				mtfifo::LogElement logElement = boost::any_cast<mtfifo::LogElement>(elem);
-				//BOOST_LOG_TRIVIAL(static_cast<info>(boost::log::v2s_mt_nt5::trivial)) << logElement.value; //TODO
+				BOOST_LOG_TRIVIAL(info) << logElement.value;
 			}catch (boost::bad_any_cast &e){
 				try{
 					boost::any_cast<boost::none_t>(elem);
