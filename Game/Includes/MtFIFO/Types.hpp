@@ -13,7 +13,6 @@
 
 //Boost
 #include <boost/log/trivial.hpp>
-#include <boost/log/detail/trivial_keyword.hpp>
 
 namespace mtfifo{
 	struct StringElement{

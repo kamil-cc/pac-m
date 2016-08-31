@@ -14,21 +14,6 @@
 
 //Boost
 #include <boost/any.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/path_traits.hpp>
-#include <boost/filesystem/config.hpp>
-#include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/exception.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup.hpp>
 #include <boost/none.hpp>
 
 //App
@@ -38,14 +23,22 @@
 #include <MtFIFO/Names.hpp>
 #include <MtFIFO/Types.hpp>
 
-using namespace std;
+//TODO usuñ
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
 
 namespace thd{
 
 class LoggingThread{
 public:
 	void loggingInit(){//TODO Wyrzucic treœc do pliku .cpp
-		//TODO
+		boost::log::add_file_log("sample.log");
 	}
 
 	void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
@@ -66,6 +59,7 @@ public:
 						boost::any_cast<mtfifo::ExitThread>(elem);
 						break;
 					}catch(boost::bad_any_cast &e){
+
 						assert(!"Unknown element type");
 					}
 				}

@@ -26,7 +26,7 @@
 								<option id="gnu.cpp.compiler.mingw.exe.debug.option.debugging.level.1943263892" name="Debug Level" superClass="gnu.cpp.compiler.mingw.exe.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.dialect.std.633153439" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.849477587" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="Boost_USE_STATIC_LIBS"/>
+									<listOptionValue builtIn="false" value="BOOST_ALL_DYN_LINK"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.1703246942" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;C:\boost_1_55_0&quot;"/>
@@ -45,13 +45,13 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.mingw.exe.debug.2106391784" name="MinGW C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.mingw.exe.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.exe.debug.1485105690" name="MinGW C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.exe.debug">
 								<option id="gnu.cpp.link.option.libs.500994893" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="boost_filesystem-mgw53-mt-d-1_55"/>
-									<listOptionValue builtIn="false" value="boost_chrono-mgw53-mt-d-1_55"/>
-									<listOptionValue builtIn="false" value="boost_iostreams-mgw53-mt-d-1_55"/>
-									<listOptionValue builtIn="false" value="boost_log-mgw53-mt-d-1_55"/>
-									<listOptionValue builtIn="false" value="boost_log_setup-mgw53-mt-d-1_55"/>
-									<listOptionValue builtIn="false" value="boost_system-mgw53-mt-d-1_55"/>
-									<listOptionValue builtIn="false" value="boost_thread-mgw53-mt-d-1_55"/>
+									<listOptionValue builtIn="false" value="boost_filesystem-mgw53-mt-d-1_55.dll"/>
+									<listOptionValue builtIn="false" value="boost_chrono-mgw53-mt-d-1_55.dll"/>
+									<listOptionValue builtIn="false" value="boost_iostreams-mgw53-mt-d-1_55.dll"/>
+									<listOptionValue builtIn="false" value="boost_log-mgw53-mt-d-1_55.dll"/>
+									<listOptionValue builtIn="false" value="boost_log_setup-mgw53-mt-d-1_55.dll"/>
+									<listOptionValue builtIn="false" value="boost_system-mgw53-mt-d-1_55.dll"/>
+									<listOptionValue builtIn="false" value="boost_thread-mgw53-mt-d-1_55.dll"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.282771954" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;C:\boost_1_55_0\stage\lib&quot;"/>
