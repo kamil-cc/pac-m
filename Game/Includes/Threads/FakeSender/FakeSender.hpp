@@ -14,6 +14,7 @@
 
 //Boost
 #include <boost/any.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/none.hpp>
 
 //App
@@ -32,9 +33,7 @@ public:
 		mtfifo::FIFO<mtfifo::FIFOOutput> output = fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
 
 		for(int i = 0; i < 100; ++i){
-			ostringstream ss;
-			ss << i;
-			std::string str = "Wiadomosc nr: " + ss.str();
+			std::string str = "Wiadomosc nr: " + boost::lexical_cast<std::string>(i);
 			boost::any elem = mtfifo::StringElement(str);
 			output.put(elem);
 			boost::this_thread::sleep_for(boost::chrono::seconds(3));
