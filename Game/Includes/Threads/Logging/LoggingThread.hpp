@@ -42,7 +42,8 @@ namespace thd{
 class LoggingThread{
 public:
 	void loggingInit(){//TODO Wyrzucic treœc do pliku .cpp
-		boost::log::add_file_log("sample.log");
+		boost::log::add_file_log(boost::log::keywords::file_name  = "sample.log",
+				boost::log::keywords::auto_flush = true );
 	}
 
 	void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
