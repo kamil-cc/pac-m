@@ -74,17 +74,12 @@ int main() {
 	FakeSender send;
 	boost::thread fakeSender(send);
 
+	FakeSender send2;
+	boost::thread fakeSender2(send2);
+
 	loggingThread.join();
 	fakeSender.join();
+	fakeSender2.join();
 
-	//FakeSender send2;
-	//boost::thread fakeSender2(send2);
-
-	/*std::cout << "end" << std::endl;*/
-
-	//loggingThread.interrupt(); WYSY£AC wiadomoœc typu Exit
-	//fakeSender.interrupt();
-	//fakeSender2.interrupt();
-	//fakeSender2.join();
 	return 0;
 }

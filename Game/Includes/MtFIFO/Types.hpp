@@ -12,7 +12,7 @@
 #include <string>
 
 //Boost
-//#include <boost/log/trivial.hpp>
+#include <boost/log/trivial.hpp>
 
 namespace mtfifo{
 	struct StringElement{
@@ -26,16 +26,20 @@ namespace mtfifo{
 	};
 
 	struct LogElement{
-		/*LogElement(const std::string& elem, boost::log::trivial::severity_level lvl){
+		LogElement(const std::string& elem, boost::log::trivial::severity_level lvl){
 			value = elem;
 			level = lvl;
 		}
 		LogElement(const LogElement& copy){
 			value = copy.value;
 			level = copy.level;
-		}*/
+		}
 		std::string value;
-		//boost::log::trivial::severity_level level;
+		boost::log::trivial::severity_level level;
+	};
+
+	struct ExitThread{
+		//Pusta struktura sygnalizuj¹ca koniecznoœc koñczenia w¹tku
 	};
 }
 

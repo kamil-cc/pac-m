@@ -51,7 +51,12 @@ public:
 				try{
 					boost::any_cast<boost::none_t>(elem);
 				}catch (boost::bad_any_cast &e){
-					assert(!"Unknown element type");
+					try{
+						boost::any_cast<mtfifo::ExitThread>(elem);
+						break;
+					}catch(boost::bad_any_cast &e){
+						assert(!"Unknown element type");
+					}
 				}
 			}
 			boost::this_thread::sleep_for(boost::chrono::seconds(1));
