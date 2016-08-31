@@ -14,6 +14,16 @@
 //Boost
 #include <boost/log/trivial.hpp>
 
+//TODO usuñ
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+
 namespace mtfifo{
 	struct StringElement{
 		StringElement(const std::string& elem){
@@ -26,7 +36,7 @@ namespace mtfifo{
 	};
 
 	struct LogElement{
-		LogElement(const std::string& elem, boost::log::trivial::severity_level lvl){
+		LogElement(const std::string& elem, boost::log::v2s_mt_nt5::trivial::severity_level lvl){
 			value = elem;
 			level = lvl;
 		}
@@ -35,7 +45,7 @@ namespace mtfifo{
 			level = copy.level;
 		}
 		std::string value;
-		boost::log::trivial::severity_level level;
+		boost::log::v2s_mt_nt5::trivial::severity_level level;
 	};
 
 	struct ExitThread{

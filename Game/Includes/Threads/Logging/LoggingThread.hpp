@@ -11,6 +11,9 @@
 //Std
 #include <string>
 #include <iostream>
+#ifdef PRINT_TYPEINFO
+#include <typeinfo>
+#endif
 
 //Boost
 #include <boost/any.hpp>
@@ -50,7 +53,7 @@ public:
 			boost::any elem = input.get();
 			try{
 				mtfifo::LogElement logElement = boost::any_cast<mtfifo::LogElement>(elem);
-				BOOST_LOG_TRIVIAL(info) << logElement.value;
+				BOOST_LOG_TRIVIAL(logElement.level) << logElement.value;
 			}catch (boost::bad_any_cast &e){
 				try{
 					boost::any_cast<boost::none_t>(elem);
@@ -59,7 +62,6 @@ public:
 						boost::any_cast<mtfifo::ExitThread>(elem);
 						break;
 					}catch(boost::bad_any_cast &e){
-
 						assert(!"Unknown element type");
 					}
 				}
