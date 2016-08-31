@@ -36,7 +36,7 @@ namespace mtfifo{
 	};
 
 	struct LogElement{
-		LogElement(const std::string& elem, boost::log::v2s_mt_nt5::trivial::severity_level lvl){
+		LogElement(const std::string& elem, boost::log::trivial::severity_level lvl){
 			value = elem;
 			level = lvl;
 		}
@@ -45,7 +45,7 @@ namespace mtfifo{
 			level = copy.level;
 		}
 		std::string value;
-		boost::log::v2s_mt_nt5::trivial::severity_level level;
+		boost::log::trivial::severity_level level;
 	};
 
 	struct ExitThread{

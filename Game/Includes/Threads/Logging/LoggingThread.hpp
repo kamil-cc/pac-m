@@ -35,6 +35,7 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
+//#include <boost/log/>
 
 namespace thd{
 
@@ -53,7 +54,9 @@ public:
 			boost::any elem = input.get();
 			try{
 				mtfifo::LogElement logElement = boost::any_cast<mtfifo::LogElement>(elem);
-				BOOST_LOG_TRIVIAL(logElement.level) << logElement.value;
+				//boost::log::v2s_mt_nt5::trivial::severity_level lvl = logElement.level;
+				boost::log::sources::severity_logger< boost::log::trivial::severity_level > lg;
+				BOOST_LOG_SEV(lg,logElement.level) << logElement.value;
 			}catch (boost::bad_any_cast &e){
 				try{
 					boost::any_cast<boost::none_t>(elem);
