@@ -15,6 +15,7 @@
 //Boost
 #include <boost/any.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/log/trivial.hpp>
 #include <boost/none.hpp>
 
 //App
@@ -34,7 +35,7 @@ public:
 
 		for(int i = 0; i < 100; ++i){
 			std::string str = "Wiadomosc nr: " + boost::lexical_cast<std::string>(i);
-			boost::any elem = mtfifo::StringElement(str);
+			boost::any elem = mtfifo::LogElement(str, boost::log::trivial::severity_level::info);
 			output.put(elem);
 			boost::this_thread::sleep_for(boost::chrono::seconds(3));
 		}
