@@ -11,9 +11,6 @@
 //Std
 #include <string>
 #include <iostream>
-#ifdef PRINT_TYPEINFO
-#include <typeinfo>
-#endif
 
 //Boost
 #include <boost/any.hpp>
@@ -25,6 +22,7 @@
 #include <MtFIFO/FIFOInput.hpp>
 #include <MtFIFO/Names.hpp>
 #include <MtFIFO/Types.hpp>
+#include <Threads/ThreadRegistration.hpp>
 
 //TODO usuñ
 #include <boost/log/core.hpp>
@@ -35,29 +33,37 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
-//#include <boost/log/>
+#include <boost/log/utility/setup/console.hpp>
 
 namespace thd{
 
 class LoggingThread{
 public:
 	void loggingInit(){//TODO Wyrzucic treœc do pliku .cpp
-		boost::log::add_file_log(boost::log::keywords::file_name  = "sample.log",
-				boost::log::keywords::auto_flush = true );
+		boost::log::add_file_log(
+				boost::log::keywords::file_name  = "game.log",
+				boost::log::keywords::auto_flush = true);
+		//boost::log::core::get()->set_filter(
+		//        boost::log::trivial::severity >= boost::log::trivial::info);
+		boost::log::add_console_log(
+				std::cout,
+				boost::log::keywords::format = ">> %Message%",
+				boost::log::keywords::auto_flush = true);
 	}
 
 	void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
 		loggingInit();
-		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
+		/*const*/ mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
 		mtfifo::FIFO<mtfifo::FIFOInput> input = fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_LOG);
+		boost::log::sources::severity_logger< mtfifo::severity_log_level > log;
+		thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
+		//threadRegistration.r
 
 		while(1){
 			boost::any elem = input.get();
 			try{
 				mtfifo::LogElement logElement = boost::any_cast<mtfifo::LogElement>(elem);
-				//boost::log::v2s_mt_nt5::trivial::severity_level lvl = logElement.level;
-				boost::log::sources::severity_logger< boost::log::trivial::severity_level > lg;
-				BOOST_LOG_SEV(lg,logElement.level) << logElement.value;
+				BOOST_LOG_SEV(log, logElement.level) << logElement.value;
 			}catch (boost::bad_any_cast &e){
 				try{
 					boost::any_cast<boost::none_t>(elem);

@@ -1,8 +1,10 @@
-/*
+/**
  * Types.hpp
  *
  *  Created on: 28 sie 2016
- *      Author: Kamil
+ *      Author: Kamil Burzyñski
+ *
+ *  Plik zawiera typy wiadomoœci przesy³anych przez kolejki fifo.
  */
 
 #ifndef GAME_INCLUDES_MTFIFO_TYPES_HPP_
@@ -25,6 +27,9 @@
 #include <boost/log/sources/record_ostream.hpp>
 
 namespace mtfifo{
+	/**
+	 * Prosty std::string
+	 */
 	struct StringElement{
 		StringElement(const std::string& elem){
 			value = elem;
@@ -35,8 +40,22 @@ namespace mtfifo{
 		std::string value;
 	};
 
+	/**
+	 * Poziom logowania
+	 */
+	typedef enum severity_log_level_{
+	    normal,
+	    notification,
+	    warning,
+	    error,
+	    critical
+	}severity_log_level;
+
+	/**
+	 * Wiadomoœc w logu
+	 */
 	struct LogElement{
-		LogElement(const std::string& elem, boost::log::trivial::severity_level lvl){
+		LogElement(const std::string& elem, severity_log_level lvl){
 			value = elem;
 			level = lvl;
 		}
@@ -45,11 +64,13 @@ namespace mtfifo{
 			level = copy.level;
 		}
 		std::string value;
-		boost::log::trivial::severity_level level;
+		severity_log_level level;
 	};
 
+	/**
+	 * Pusta struktura sygnalizuj¹ca koniecznoœc koñczenia w¹tku
+	 */
 	struct ExitThread{
-		//Pusta struktura sygnalizuj¹ca koniecznoœc koñczenia w¹tku
 	};
 }
 

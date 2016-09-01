@@ -22,7 +22,8 @@ using namespace std;
 
 namespace mtfifo{
 
-class FIFOImplementation : public boost::basic_lockable_adapter<boost::mutex>{
+class FIFOImplementation : private boost::noncopyable,
+	public boost::basic_lockable_adapter<boost::mutex>{
 public:
 	FIFOImplementation();
 	virtual ~FIFOImplementation();
