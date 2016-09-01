@@ -31,11 +31,12 @@ class FakeSender{
 public:
 	void operator()(){
 		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
-		mtfifo::FIFO<mtfifo::FIFOOutput> output = fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
+		mtfifo::FIFO<mtfifo::FIFOOutput> output
+			= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
 
 		for(int i = 0; i < 100; ++i){
 			std::string str = "Wiadomosc nr: " + boost::lexical_cast<std::string>(i);
-			boost::any elem = mtfifo::LogElement(str, mtfifo::normal);
+			boost::any elem = mtfifo::LogElement(str, mtfifo::normal, boost::this_thread::get_id());
 			output.put(elem);
 			boost::this_thread::sleep_for(boost::chrono::seconds(3));
 		}

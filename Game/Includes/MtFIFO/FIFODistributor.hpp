@@ -11,6 +11,7 @@
 //Std
 #include <string>
 #include <map>
+#include <utility> //pair
 
 //Boost
 #include <boost/thread/lock_guard.hpp>
@@ -34,7 +35,7 @@ class FIFODistributor : private boost::noncopyable,
 	friend class FIFOInput;
 	friend class FIFOOutput;
 private:
-	map<std::string, const FIFOImplementation*> fifoMap_;
+	std::map<std::string, const FIFOImplementation*> fifoMap_;
 	FIFODistributor(); //Pusty
 	FIFODistributor(FIFODistributor const&); //Pusty
 	const FIFOImplementation* getImplementation(const std::string& name); //zabezpieczone guardem jak poni¿sza funkcja
@@ -47,7 +48,7 @@ public:
 	 * czy "wyjœciowa" (output).
 	 * Argumentem funkcji jest nazwa kolejki.
 	 */
-	template<class IO> FIFO<IO> getFIFO(const string& name){
+	template<class IO> FIFO<IO> getFIFO(const std::string& name){
 		boost::lock_guard<FIFODistributor> guard(*this);
 		FIFO<IO> fifo_(name);
 		return fifo_;

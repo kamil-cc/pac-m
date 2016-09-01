@@ -15,6 +15,7 @@
 
 //Boost
 #include <boost/log/trivial.hpp>
+#include <boost/thread.hpp>
 
 //TODO usuñ
 #include <boost/log/core.hpp>
@@ -55,16 +56,20 @@ namespace mtfifo{
 	 * Wiadomoœc w logu
 	 */
 	struct LogElement{
-		LogElement(const std::string& elem, severity_log_level lvl){
+		LogElement(const std::string& elem, const severity_log_level& lvl,
+				const boost::thread::id& tid){
 			value = elem;
 			level = lvl;
+			id = tid;
 		}
 		LogElement(const LogElement& copy){
 			value = copy.value;
 			level = copy.level;
+			id = copy.id;
 		}
 		std::string value;
 		severity_log_level level;
+		boost::thread::id id;
 	};
 
 	/**

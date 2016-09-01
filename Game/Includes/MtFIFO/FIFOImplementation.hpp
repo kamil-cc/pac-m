@@ -19,8 +19,6 @@
 #include <boost/noncopyable.hpp>
 #include <boost/none.hpp>
 
-using namespace std;
-
 namespace mtfifo{
 
 class FIFOImplementation : private boost::noncopyable,
@@ -35,7 +33,7 @@ public:
 	void setUnavailable();
 private:
 	static size_t MAX_QUEUE_SIZE;
-	queue<boost::any> queue_;
+	std::queue<boost::any> queue_;
 	bool available_;
 };
 

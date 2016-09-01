@@ -14,17 +14,17 @@ mtfifo::FIFODistributor::FIFODistributor(){
 }
 
 mtfifo::FIFODistributor::~FIFODistributor(){
-	for (map<string, const FIFOImplementation*>::iterator it = fifoMap_.begin(),
+	for (std::map<std::string, const FIFOImplementation*>::iterator it = fifoMap_.begin(),
 			end = fifoMap_.end(); it != end; ++it){
 	  delete it->second;
 	}
 	fifoMap_.clear();
 }
 
-const mtfifo::FIFOImplementation* mtfifo::FIFODistributor::getImplementation(const string& name){
+const mtfifo::FIFOImplementation* mtfifo::FIFODistributor::getImplementation(const std::string& name){
 	boost::lock_guard<FIFODistributor> guard(*this);
 	if (fifoMap_.find(name) == fifoMap_.end()){ //Jeœli brak elementu, utwórz go
-		fifoMap_.insert(pair<const string, const FIFOImplementation*>(string(name), new FIFOImplementation()));
+		fifoMap_.insert(std::pair<const std::string, const FIFOImplementation*>(std::string(name), new FIFOImplementation()));
 	}
 	//zwróc istniej¹cy element
 	return fifoMap_[name];
