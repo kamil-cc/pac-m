@@ -18,11 +18,9 @@
 //#include <MtFIFO/FIFOOutput.hpp>
 #include <MtFIFO/Names.hpp>
 #include <Threads/Logging/LoggingThread.hpp>
-#include <Threads/TCPIP/TCPIPThread.hpp>
-
-//Tmp
 #include <iostream>
 #include <Threads/FakeSender/FakeSender.hpp>
+#include <Threads/TCPIP/TCPIPThreadReciever.hpp>
 
 //using namespace mtfifo;
 using namespace thd;
@@ -78,7 +76,7 @@ int main() {
 	FakeSender send2;
 	boost::thread fakeSender2(send2);
 
-	TCPIPThread TCPIPstack;
+	TCPIPThreadReciever TCPIPstack;
 	boost::thread TCPIP(TCPIPstack);
 
 	loggingThread.join();

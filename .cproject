@@ -47,6 +47,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.exe.debug.1485105690" name="MinGW C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.exe.debug">
 								<option id="gnu.cpp.link.option.libs.500994893" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="boost_filesystem-mgw53-mt-d-1_55.dll"/>
+									<listOptionValue builtIn="false" value="ws2_32"/>
 									<listOptionValue builtIn="false" value="boost_chrono-mgw53-mt-d-1_55.dll"/>
 									<listOptionValue builtIn="false" value="boost_iostreams-mgw53-mt-d-1_55.dll"/>
 									<listOptionValue builtIn="false" value="boost_log-mgw53-mt-d-1_55.dll"/>
