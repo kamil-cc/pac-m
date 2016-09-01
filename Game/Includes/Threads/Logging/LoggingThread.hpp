@@ -15,6 +15,15 @@
 //Boost
 #include <boost/any.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/console.hpp>
 #include <boost/none.hpp>
 
 //App
@@ -26,43 +35,20 @@
 #include <Threads/ThreadRegistration.hpp>
 #include <Threads/ThreadNames.hpp>
 
-//TODO usuñ
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/utility/setup/console.hpp>
-
-// We define our own severity levels
-enum severity_level
-{
-    normal,
-    notification,
-    warning,
-    error,
-    critical
-};
-
-// The operator puts a human-friendly representation of the severity level to the stream
-std::ostream& operator<< (std::ostream& strm, severity_level level)
-{
-    static const char* strings[] =
-    {
-        "normal",
-        "notification",
-        "warning",
-        "error",
-        "critical"
+//Operator wyœwietlaj¹cy poziom loga w zrozumia³ej dla cz³owieka postaci
+std::ostream& operator<<(std::ostream& strm, severity_log_level level){
+    static const char* strings[] = {
+        "[NORMAL]",
+        "[NOTIFICATION]",
+        "[WARNING]",
+        "[ERROR]",
+        "[CRITICAL]"
     };
 
-    if (static_cast< std::size_t >(level) < sizeof(strings) / sizeof(*strings))
+    if (static_cast<std::size_t>(level) < (sizeof(strings) / sizeof(*strings)))
         strm << strings[level];
     else
-        strm << static_cast< int >(level);
+        strm << static_cast<int>(level);
 
     return strm;
 }
@@ -72,13 +58,11 @@ namespace thd{
 class LoggingThread{
 public:
 	void loggingInit(){//TODO Wyrzucic treœc do pliku .cpp
-		boost::log::register_simple_formatter_factory<severity_level, char>("Severity");
+		boost::log::register_simple_formatter_factory<severity_log_level, char>("Severity");
 		boost::log::add_file_log(
 				boost::log::keywords::file_name  = "game.log",
 				boost::log::keywords::format = ">> %Message% >> %Severity%",
 				boost::log::keywords::auto_flush = true);
-		//boost::log::core::get()->set_filter(
-		//        boost::log::trivial::severity >= boost::log::trivial::info);
 		boost::log::add_console_log(
 				std::cout,
 				boost::log::keywords::format = ">> %Message% >> %Severity%",
@@ -87,7 +71,7 @@ public:
 
 	void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
 		loggingInit();
-		boost::log::sources::severity_logger<severity_level> log;
+		boost::log::sources::severity_logger<severity_log_level> log;
 
 		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
 		mtfifo::FIFO<mtfifo::FIFOInput> input = fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_LOG);

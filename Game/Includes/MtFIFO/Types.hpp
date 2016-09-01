@@ -14,18 +14,18 @@
 #include <string>
 
 //Boost
-#include <boost/log/trivial.hpp>
 #include <boost/thread.hpp>
 
-//TODO usuñ
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
+/**
+ * Poziom logowania. Globalnie dostêpny enum.
+ */
+typedef enum severity_log_level_{
+	normal,
+	notification,
+	warning,
+	error,
+	critical
+}severity_log_level;
 
 namespace mtfifo{
 	/**
@@ -40,17 +40,6 @@ namespace mtfifo{
 		}
 		std::string value;
 	};
-
-	/**
-	 * Poziom logowania
-	 */
-	typedef enum severity_log_level_{
-	    normal,
-	    notification,
-	    warning,
-	    error,
-	    critical
-	}severity_log_level;
 
 	/**
 	 * Wiadomoœc w logu

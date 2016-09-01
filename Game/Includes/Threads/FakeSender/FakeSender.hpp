@@ -40,7 +40,7 @@ public:
 
 		for(int i = 0; i < 100; ++i){
 			std::string str = "Wiadomosc nr: " + boost::lexical_cast<std::string>(i);
-			boost::any elem = mtfifo::LogElement(str, mtfifo::notification, boost::this_thread::get_id());
+			boost::any elem = mtfifo::LogElement(str, notification, boost::this_thread::get_id());
 			output.put(elem);
 			boost::this_thread::sleep_for(boost::chrono::seconds(3));
 		}
