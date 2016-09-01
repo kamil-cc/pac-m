@@ -30,7 +30,8 @@ namespace mtfifo{
 /**
  * Dystrybutor kolejek fifo, singleton
  */
-class FIFODistributor : public boost::basic_lockable_adapter<boost::recursive_mutex>{
+class FIFODistributor : private boost::noncopyable,
+	public boost::basic_lockable_adapter<boost::recursive_mutex>{
 	friend class FIFOInput;
 	friend class FIFOOutput;
 private:
