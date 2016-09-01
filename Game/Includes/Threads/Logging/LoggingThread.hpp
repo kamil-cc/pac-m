@@ -37,25 +37,57 @@
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/utility/setup/console.hpp>
 
+// We define our own severity levels
+enum severity_level
+{
+    normal,
+    notification,
+    warning,
+    error,
+    critical
+};
+
+// The operator puts a human-friendly representation of the severity level to the stream
+std::ostream& operator<< (std::ostream& strm, severity_level level)
+{
+    static const char* strings[] =
+    {
+        "normal",
+        "notification",
+        "warning",
+        "error",
+        "critical"
+    };
+
+    if (static_cast< std::size_t >(level) < sizeof(strings) / sizeof(*strings))
+        strm << strings[level];
+    else
+        strm << static_cast< int >(level);
+
+    return strm;
+}
+
 namespace thd{
 
 class LoggingThread{
 public:
 	void loggingInit(){//TODO Wyrzucic treœc do pliku .cpp
+		boost::log::register_simple_formatter_factory<severity_level, char>("Severity");
 		boost::log::add_file_log(
 				boost::log::keywords::file_name  = "game.log",
+				boost::log::keywords::format = ">> %Message% >> %Severity%",
 				boost::log::keywords::auto_flush = true);
 		//boost::log::core::get()->set_filter(
 		//        boost::log::trivial::severity >= boost::log::trivial::info);
 		boost::log::add_console_log(
 				std::cout,
-				boost::log::keywords::format = ">> %Message%",
+				boost::log::keywords::format = ">> %Message% >> %Severity%",
 				boost::log::keywords::auto_flush = true);
 	}
 
 	void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
 		loggingInit();
-		boost::log::sources::severity_logger<mtfifo::severity_log_level> log;
+		boost::log::sources::severity_logger<severity_level> log;
 
 		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
 		mtfifo::FIFO<mtfifo::FIFOInput> input = fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_LOG);
@@ -68,8 +100,8 @@ public:
 			boost::any elem = input.get();
 			try{
 				mtfifo::LogElement logElement = boost::any_cast<mtfifo::LogElement>(elem);
-				BOOST_LOG_SEV(log, logElement.level)
-					<< threadRegistration.getName(logElement.id) << logElement.value;
+				BOOST_LOG_SEV(log, normal)
+					<< "[" <<threadRegistration.getName(logElement.id) << "] " << logElement.value;
 			}catch (boost::bad_any_cast &e){
 				try{
 					boost::any_cast<boost::none_t>(elem);
