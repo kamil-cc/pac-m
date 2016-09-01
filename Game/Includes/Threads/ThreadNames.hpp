@@ -12,6 +12,7 @@
 
 namespace thd{
 	const std::string LOGGER = "LOGGER";
+	const std::string FAKE = "FAKE";
 }
 
 #endif /* GAME_INCLUDES_THREADS_THREADNAMES_HPP_ */

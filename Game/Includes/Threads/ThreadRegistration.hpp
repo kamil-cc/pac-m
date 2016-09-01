@@ -41,6 +41,14 @@ public:
     	if(!res.second)
     		assert(!"Double registration");
     }
+
+    std::string getName(const boost::thread::id& id){ //TODO do pliku cpp
+    	boost::lock_guard<ThreadRegistration> guard(*this);
+    	std::map<const boost::thread::id, const std::string>::iterator it;
+    	if((it = map_.find(id)) == map_.end())
+    		assert(!"No such id");
+    	return it->second;
+    }
 private:
     std::map<const boost::thread::id, const std::string> map_;
 };

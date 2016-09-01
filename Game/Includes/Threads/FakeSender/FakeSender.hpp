@@ -34,6 +34,10 @@ public:
 		mtfifo::FIFO<mtfifo::FIFOOutput> output
 			= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
 
+		boost::thread::id id = boost::this_thread::get_id();
+		thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
+		threadRegistration.registerThread(id, thd::FAKE);
+
 		for(int i = 0; i < 100; ++i){
 			std::string str = "Wiadomosc nr: " + boost::lexical_cast<std::string>(i);
 			boost::any elem = mtfifo::LogElement(str, mtfifo::normal, boost::this_thread::get_id());

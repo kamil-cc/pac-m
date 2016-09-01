@@ -68,7 +68,8 @@ public:
 			boost::any elem = input.get();
 			try{
 				mtfifo::LogElement logElement = boost::any_cast<mtfifo::LogElement>(elem);
-				BOOST_LOG_SEV(log, logElement.level) << logElement.value;
+				BOOST_LOG_SEV(log, logElement.level)
+					<< threadRegistration.getName(logElement.id) << logElement.value;
 			}catch (boost::bad_any_cast &e){
 				try{
 					boost::any_cast<boost::none_t>(elem);
