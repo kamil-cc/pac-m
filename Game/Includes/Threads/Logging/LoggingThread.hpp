@@ -16,6 +16,7 @@
 #include <boost/any.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/log/core.hpp>
+#include <boost/chrono.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/sinks/text_file_backend.hpp>
 #include <boost/log/sources/severity_logger.hpp>
@@ -25,6 +26,7 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/none.hpp>
+#include <boost/random.hpp>
 
 //App
 #include <MtFIFO/FIFO.hpp>
@@ -79,6 +81,8 @@ public:
 		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
 		mtfifo::FIFO<mtfifo::FIFOInput> input
 			= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_LOG);
+		mtfifo::FIFO<mtfifo::FIFOOutput> output
+					= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
 
 		boost::thread::id id = boost::this_thread::get_id();
 		thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
@@ -87,12 +91,15 @@ public:
 		ThreadTime& threadTime = ThreadTime::getInstance();
 		timeMaster = threadTime.factory();
 
+		boost::random::mt19937 rng;
+		boost::random::uniform_int_distribution<> ten(1,10);
+
 		while(1){
 			boost::any elem = input.get();
 			try{
 				mtfifo::LogElement logElement = boost::any_cast<mtfifo::LogElement>(elem);
 				BOOST_LOG_SEV(log, logElement.level)
-					<< "[" <<threadRegistration.getName(logElement.id) << "] " << logElement.value;
+					<< "[" << threadRegistration.getName(logElement.id) << "] " << logElement.value;
 			}catch (boost::bad_any_cast &e){
 				try{
 					boost::any_cast<boost::none_t>(elem);
@@ -105,14 +112,26 @@ public:
 					}
 				}
 			}
-			boost::this_thread::sleep_for(timeMaster->calculateTime(LOG_TIME, input.size()));
+			wait = timeMaster->calculateTime(LOG_TIME, input.size());
+			if(ten(rng) == 1){ //Wiadomoœc debugowa. Œrednio co dziesi¹ta
+				elem = mtfifo::LogElement(
+						std::string("Czekam: ") + boost::lexical_cast<std::string>(wait)
+						+ " Rozmiar: " + boost::lexical_cast<std::string>(input.size()),
+						normal,
+						boost::this_thread::get_id());
+				output.put(elem);
+			}
+			boost::this_thread::sleep_for(wait);
 		}
 	}
-	virtual ~LoggingThread(){
+
+	virtual ~LoggingThread(){ //TODO wstawic do pliku cpp
 		delete timeMaster; //Mo¿e byc niebezpieczne, jeœli timeMaster nie bêdzie zainicjalizowany
 	}
+
 	private:
 		TimeMaster *timeMaster;
+		boost::chrono::milliseconds wait;
 };
 
 }

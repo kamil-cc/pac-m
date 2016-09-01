@@ -10,10 +10,10 @@
 
 //Std
 #include <string>
-#include <sstream>
 
 //Boost
 #include <boost/any.hpp>
+#include <boost/chrono.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/none.hpp>
@@ -40,7 +40,7 @@ public:
 
 		for(int i = 0; i < 100; ++i){
 			std::string str = "Wiadomosc nr: " + boost::lexical_cast<std::string>(i);
-			boost::any elem = mtfifo::LogElement(str, notification, boost::this_thread::get_id());
+			boost::any elem = mtfifo::LogElement(str, normal, boost::this_thread::get_id());
 			output.put(elem);
 			boost::this_thread::sleep_for(boost::chrono::seconds(3));
 		}
