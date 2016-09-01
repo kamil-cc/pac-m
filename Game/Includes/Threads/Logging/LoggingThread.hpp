@@ -53,9 +53,9 @@ public:
 
 	void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
 		loggingInit();
-		/*const*/ mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
-		mtfifo::FIFO<mtfifo::FIFOInput> input = fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_LOG);
 		boost::log::sources::severity_logger< mtfifo::severity_log_level > log;
+		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
+		mtfifo::FIFO<mtfifo::FIFOInput> input = fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_LOG);
 		thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
 		//threadRegistration.r
 
