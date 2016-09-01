@@ -34,6 +34,7 @@
 #include <MtFIFO/Types.hpp>
 #include <Threads/ThreadRegistration.hpp>
 #include <Threads/ThreadNames.hpp>
+#include <Threads/ThreadTime.hpp>
 
 //Operator wyœwietlaj¹cy poziom loga w zrozumia³ej dla cz³owieka postaci
 std::ostream& operator<<(std::ostream& strm, severity_log_level level){
@@ -59,13 +60,15 @@ class LoggingThread{
 public:
 	void loggingInit(){//TODO Wyrzucic treœc do pliku .cpp
 		boost::log::register_simple_formatter_factory<severity_log_level, char>("Severity");
+		//Log do pliku
 		boost::log::add_file_log(
 				boost::log::keywords::file_name  = "game.log",
-				boost::log::keywords::format = ">> %Message% >> %Severity%",
+				boost::log::keywords::format = "%Severity% %Message%",
 				boost::log::keywords::auto_flush = true);
+		//Log na konsolê
 		boost::log::add_console_log(
 				std::cout,
-				boost::log::keywords::format = ">> %Message% >> %Severity%",
+				boost::log::keywords::format = "%Severity% %Message%",
 				boost::log::keywords::auto_flush = true);
 	}
 
@@ -74,17 +77,21 @@ public:
 		boost::log::sources::severity_logger<severity_log_level> log;
 
 		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
-		mtfifo::FIFO<mtfifo::FIFOInput> input = fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_LOG);
+		mtfifo::FIFO<mtfifo::FIFOInput> input
+			= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_LOG);
 
 		boost::thread::id id = boost::this_thread::get_id();
 		thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
 		threadRegistration.registerThread(id, thd::LOGGER);
 
+		ThreadTime& threadTime = ThreadTime::getInstance();
+		timeMaster = threadTime.factory();
+
 		while(1){
 			boost::any elem = input.get();
 			try{
 				mtfifo::LogElement logElement = boost::any_cast<mtfifo::LogElement>(elem);
-				BOOST_LOG_SEV(log, normal)
+				BOOST_LOG_SEV(log, logElement.level)
 					<< "[" <<threadRegistration.getName(logElement.id) << "] " << logElement.value;
 			}catch (boost::bad_any_cast &e){
 				try{
@@ -98,9 +105,14 @@ public:
 					}
 				}
 			}
-			boost::this_thread::sleep_for(boost::chrono::seconds(1));
+			boost::this_thread::sleep_for(timeMaster->calculateTime(LOG_TIME, input.size()));
 		}
 	}
+	virtual ~LoggingThread(){
+		delete timeMaster; //Mo¿e byc niebezpieczne, jeœli timeMaster nie bêdzie zainicjalizowany
+	}
+	private:
+		TimeMaster *timeMaster;
 };
 
 }
