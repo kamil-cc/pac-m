@@ -62,8 +62,7 @@ public:
 
 		boost::thread::id id = boost::this_thread::get_id();
 		thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
-		threadRegistration.registerThread(id, thd::LOGGER + std::string(": ")
-			+ boost::lexical_cast<std::string>(id) );
+		threadRegistration.registerThread(id, thd::LOGGER);
 
 		while(1){
 			boost::any elem = input.get();

@@ -24,7 +24,8 @@ mtfifo::FIFODistributor::~FIFODistributor(){
 const mtfifo::FIFOImplementation* mtfifo::FIFODistributor::getImplementation(const std::string& name){
 	boost::lock_guard<FIFODistributor> guard(*this);
 	if (fifoMap_.find(name) == fifoMap_.end()){ //Jeœli brak elementu, utwórz go
-		fifoMap_.insert(std::pair<const std::string, const FIFOImplementation*>(std::string(name), new FIFOImplementation()));
+		fifoMap_.insert(std::pair<const std::string, const FIFOImplementation*>(std::string(name),
+				new FIFOImplementation()));
 	}
 	//zwróc istniej¹cy element
 	return fifoMap_[name];

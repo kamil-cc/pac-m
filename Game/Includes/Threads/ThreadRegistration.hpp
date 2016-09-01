@@ -35,10 +35,14 @@ public:
 
     void registerThread(const boost::thread::id& id, const std::string& name){ //TODO wrzucic implementacjê do pliku cpp
     	boost::lock_guard<ThreadRegistration> guard(*this);
-
+    	std::string key = name + std::string(": ") + boost::lexical_cast<std::string>(id);
+    	std::pair<std::map<const boost::thread::id, const std::string>::iterator, bool> res  =
+    			map_.insert(std::pair<const boost::thread::id, const std::string>(id, key));
+    	if(!res.second)
+    		assert(!"Double registration");
     }
 private:
-
+    std::map<const boost::thread::id, const std::string> map_;
 };
 
 }
