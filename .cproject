@@ -32,7 +32,7 @@
 									<listOptionValue builtIn="false" value="&quot;C:\boost_1_55_0&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Game/Includes}&quot;"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.dialect.flags.310391266" name="Other dialect flags" superClass="gnu.cpp.compiler.option.dialect.flags" value="" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.dialect.flags.310391266" name="Other dialect flags" superClass="gnu.cpp.compiler.option.dialect.flags" value="-std=gnu++11" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.375656161" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.mingw.exe.debug.1584265176" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.mingw.exe.debug">

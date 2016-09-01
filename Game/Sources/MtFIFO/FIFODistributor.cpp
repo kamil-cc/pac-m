@@ -30,11 +30,12 @@ const mtfifo::FIFOImplementation* mtfifo::FIFODistributor::getImplementation(con
 	return fifoMap_[name];
 }
 
-/*
- * Pobieranie jedynej instancji klasy
+/**
+ * Pobieranie jedynej instancji klasy.
+ * "in C++11 static locals are guaranteed to be initialized by the runtime in a thread-safe manner."
+ * http://stackoverflow.com/questions/6116520/c-is-this-getinstance-method-of-my-singleton-threadsafe
  */
-mtfifo::FIFODistributor& mtfifo::FIFODistributor::getInstance(){ //TODO potencjalne niebezpieczeñstwo dostêpu wspó³bie¿nego
-	//TODO za³o¿yc jakiœ mutex na funkcjê static
+mtfifo::FIFODistributor& mtfifo::FIFODistributor::getInstance(){
 	static FIFODistributor instance;
 	return instance;
 }
