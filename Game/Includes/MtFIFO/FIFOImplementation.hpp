@@ -16,6 +16,7 @@
 #include <boost/thread/lock_guard.hpp>
 #include <boost/thread/lockable_adapter.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/none.hpp>
 
 using namespace std;

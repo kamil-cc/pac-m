@@ -8,6 +8,9 @@
 #ifndef GAME_INCLUDES_THREADS_THREADREGISTRATION_HPP_
 #define GAME_INCLUDES_THREADS_THREADREGISTRATION_HPP_
 
+//Std
+#include <map>
+
 //Boost
 #include <boost/noncopyable.hpp>
 #include <boost/thread.hpp>
@@ -31,9 +34,11 @@ public:
     }
 
     void registerThread(const boost::thread::id& id, const std::string& name){ //TODO wrzucic implementacjê do pliku cpp
-    	boost::lock_guard<ThreadRegistration> guard(/*ThreadRegistration::getInstance()*/*this);
+    	boost::lock_guard<ThreadRegistration> guard(*this);
 
     }
+private:
+
 };
 
 }

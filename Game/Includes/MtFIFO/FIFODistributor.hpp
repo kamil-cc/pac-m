@@ -16,14 +16,13 @@
 #include <boost/thread/lock_guard.hpp>
 #include <boost/thread/lockable_adapter.hpp>
 #include <boost/thread/recursive_mutex.hpp>
+#include <boost/noncopyable.hpp>
 
 //App
 #include <MtFIFO/FIFO.hpp>
 #include <MtFIFO/FIFOImplementation.hpp>
 #include <MtFIFO/FIFOInput.hpp>
 #include <MtFIFO/FIFOOutput.hpp>
-
-using namespace std;
 
 namespace mtfifo{
 
@@ -35,10 +34,10 @@ class FIFODistributor : private boost::noncopyable,
 	friend class FIFOInput;
 	friend class FIFOOutput;
 private:
-	map<string, const FIFOImplementation*> fifoMap_;
+	map<std::string, const FIFOImplementation*> fifoMap_;
 	FIFODistributor(); //Pusty
 	FIFODistributor(FIFODistributor const&); //Pusty
-	const FIFOImplementation* getImplementation(const string& name); //zabezpieczone guardem jak poni¿sza funkcja
+	const FIFOImplementation* getImplementation(const std::string& name); //zabezpieczone guardem jak poni¿sza funkcja
 
 public:
 	virtual ~FIFODistributor();

@@ -10,10 +10,8 @@
 
 #include <string>
 
-using namespace std;
-
 namespace mtfifo{
-	const string FIFO_LOG = "FIFO_LOG";
+	const std::string FIFO_LOG = "FIFO_LOG";
 }
 
 #endif /* GAME_INCLUDES_MTFIFO_NAMES_HPP_ */

@@ -14,8 +14,6 @@
 //Boost
 #include <boost/any.hpp>
 
-using namespace std;
-
 namespace mtfifo{
 
 template <class IO> class FIFO {
