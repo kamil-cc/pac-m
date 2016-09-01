@@ -14,6 +14,7 @@
 
 //Boost
 #include <boost/any.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/none.hpp>
 
 //App
@@ -23,6 +24,7 @@
 #include <MtFIFO/Names.hpp>
 #include <MtFIFO/Types.hpp>
 #include <Threads/ThreadRegistration.hpp>
+#include <Threads/ThreadNames.hpp>
 
 //TODO usuñ
 #include <boost/log/core.hpp>
@@ -53,11 +55,14 @@ public:
 
 	void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
 		loggingInit();
-		boost::log::sources::severity_logger< mtfifo::severity_log_level > log;
+		boost::log::sources::severity_logger<mtfifo::severity_log_level> log;
+
 		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
 		mtfifo::FIFO<mtfifo::FIFOInput> input = fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_LOG);
+
+		boost::thread::id id = boost::this_thread::get_id();
 		thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
-		//threadRegistration.r
+		threadRegistration.registerThread(id, boost::lexical_cast<std::string>(id) + thd::LOGGER);
 
 		while(1){
 			boost::any elem = input.get();
