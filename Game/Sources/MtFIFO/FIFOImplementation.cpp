@@ -7,7 +7,7 @@
 
 #include <MtFIFO/FIFOImplementation.hpp>
 
-size_t mtfifo::FIFOImplementation::MAX_QUEUE_SIZE = 1024; //Arbitralnie dobrana wielkoœc
+std::size_t mtfifo::FIFOImplementation::MAX_QUEUE_SIZE = 1024; //Arbitralnie dobrana wielkoœc
 
 mtfifo::FIFOImplementation::FIFOImplementation() : available_(true){
 }
@@ -33,7 +33,7 @@ void mtfifo::FIFOImplementation::put(boost::any elem){
 	queue_.push(elem);
 }
 
-size_t mtfifo::FIFOImplementation::size(){
+std::size_t mtfifo::FIFOImplementation::size(){
 	boost::lock_guard<FIFOImplementation> guard(*this);
 	return queue_.size();
 }

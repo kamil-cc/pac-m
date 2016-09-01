@@ -24,6 +24,6 @@ void mtfifo::FIFOOutput::put(boost::any elem){
 	impl_->put(elem);
 }
 
-size_t mtfifo::FIFOOutput::size(){
+std::size_t mtfifo::FIFOOutput::size(){
 	return impl_->size();
 }

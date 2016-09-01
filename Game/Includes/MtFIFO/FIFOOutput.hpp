@@ -26,7 +26,7 @@ public:
 	virtual ~FIFOOutput();
 	boost::any get();
 	void put(boost::any elem);
-	size_t size();
+	std::size_t size();
 private:
 	FIFOImplementation* impl_;
 };

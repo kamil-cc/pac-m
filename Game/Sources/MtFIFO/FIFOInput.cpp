@@ -26,6 +26,6 @@ void mtfifo::FIFOInput::put(boost::any elem){
 	//Nie podejmujemy ¿adnej akcji w przypadku pisania do koleji wejœciowej
 }
 
-size_t mtfifo::FIFOInput::size(){
+std::size_t mtfifo::FIFOInput::size(){
 	return impl_->size();
 }

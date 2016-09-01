@@ -28,11 +28,11 @@ public:
 	virtual ~FIFOImplementation();
 	boost::any get();
 	void put(boost::any elem);
-	size_t size();
+	std::size_t size();
 	bool isInputAvailable();
 	void setUnavailable();
 private:
-	static size_t MAX_QUEUE_SIZE;
+	static std::size_t MAX_QUEUE_SIZE;
 	std::queue<boost::any> queue_;
 	bool available_;
 };

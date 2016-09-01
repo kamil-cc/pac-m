@@ -22,7 +22,7 @@ public:
 	virtual ~FIFO(){};
 	inline void put(boost::any elem) {io_fifo_.put(elem);} //Wrappery typu inline
 	inline boost::any get() {return io_fifo_.get();}
-	inline size_t size(){return io_fifo_.size();}
+	inline std::size_t size(){return io_fifo_.size();}
 private:
 	IO io_fifo_;
 };
