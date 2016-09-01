@@ -38,11 +38,11 @@ public:
 		thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
 		threadRegistration.registerThread(id, thd::FAKE);
 
-		for(int i = 0; i < 100; ++i){
+		for(int i = 0; i < 1000; ++i){
 			std::string str = "Wiadomosc nr: " + boost::lexical_cast<std::string>(i);
 			boost::any elem = mtfifo::LogElement(str, normal, boost::this_thread::get_id());
 			output.put(elem);
-			boost::this_thread::sleep_for(boost::chrono::seconds(3));
+			boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
 		}
 	}
 };

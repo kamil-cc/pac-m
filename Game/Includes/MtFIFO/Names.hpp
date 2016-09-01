@@ -12,6 +12,7 @@
 
 namespace mtfifo{
 	const std::string FIFO_LOG = "FIFO_LOG";
+	const std::string FIFO_TCPIP = "FIFO_TCPIP";
 }
 
 #endif /* GAME_INCLUDES_MTFIFO_NAMES_HPP_ */

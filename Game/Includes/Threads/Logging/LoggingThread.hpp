@@ -62,6 +62,7 @@ class LoggingThread{
 public:
 	void loggingInit(){//TODO Wyrzucic treœc do pliku .cpp
 		boost::log::register_simple_formatter_factory<severity_log_level, char>("Severity");
+		//TODO W tym miejscu mo¿na filtrowac
 		//Log do pliku
 		boost::log::add_file_log(
 				boost::log::keywords::file_name  = "game.log",
