@@ -77,7 +77,7 @@ namespace thd{
 			receiverInit();
 			mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
 			mtfifo::FIFO<mtfifo::FIFOInput> input
-						= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_DESERIALIZE);
+						= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_TCPIP_EXIT);
 			mtfifo::FIFO<mtfifo::FIFOOutput> output
 						= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_DESERIALIZE);
 			mtfifo::FIFO<mtfifo::FIFOOutput> log
@@ -94,43 +94,45 @@ namespace thd{
 			boost::random::uniform_int_distribution<> ten(1,10);
 
 			while(1){
+				logElem = mtfifo::LogElement(std::string("Czekam na wykonanie siê accept"),
+						normal,	boost::this_thread::get_id());
+				log.put(logElem);
+
 		        if((realReceiverFd_ = accept(receiverFd_, (struct sockaddr*)&client_,
 		        		&sizeSockaddrIn_)) < 0){
-					logElem = mtfifo::LogElement(
-							std::string("accept nie zwróci³o poprawnej wartoœci"),
-							critical,
-							boost::this_thread::get_id());
+					logElem = mtfifo::LogElement(std::string("accept nie zwróci³o poprawnej wartoœci"),
+							critical, boost::this_thread::get_id());
 					log.put(logElem);
 		        	continue;
 		        }
+
+				logElem = mtfifo::LogElement(std::string("accept wykonane poprawnie. Zwrócono: ")
+						+ boost::lexical_cast<std::string>(realReceiverFd_),
+						normal,	boost::this_thread::get_id());
+				log.put(logElem);
 
 		        while(1){
 		        	processInput(input.get());
 		        	if(closeFlag_)
 		        		break;
 
-					logElem = mtfifo::LogElement(
-							std::string("Czekam na dane z socketa: ")
+					logElem = mtfifo::LogElement(std::string("Czekam na dane z socketa: ")
 							+ boost::lexical_cast<std::string>(realReceiverFd_)
 							+ std::string(" na porcie: ")
 							+ boost::lexical_cast<std::string>(GAME_LISTEN_PORT),
-							critical,
-							boost::this_thread::get_id());
+							normal,	boost::this_thread::get_id());
 					log.put(logElem);
+
 		        	recvResult_ = recv(realReceiverFd_, buffer_, BUFFER_SIZE, socketFlags_);
 					if(recvResult_ == -1){
-						logElem = mtfifo::LogElement(
-								std::string("recv zwróci³o wartoœc ujemn¹"),
-								critical,
-								boost::this_thread::get_id());
+						logElem = mtfifo::LogElement(std::string("recv zwróci³o wartoœc ujemn¹"),
+								critical, boost::this_thread::get_id());
 						log.put(logElem);
 						close(realReceiverFd_);
 						break;
 					}else if(recvResult_ == 0){
-						logElem = mtfifo::LogElement(
-								std::string("recv zwróci³o zakoñczenie po³¹czenia"),
-								error,
-								boost::this_thread::get_id());
+						logElem = mtfifo::LogElement(std::string("recv zwróci³o zakoñczenie po³¹czenia"),
+								error, boost::this_thread::get_id());
 						log.put(logElem);
 						close(realReceiverFd_);
 						break;
@@ -138,10 +140,8 @@ namespace thd{
 						buffer_[recvResult_] = '\0';
 						std::string buffer(buffer_);
 						if(ten(rng) > 0){ //Zawsze prawdziwe
-							logElem = mtfifo::LogElement(
-									std::string("Odczytano dane: ") + buffer,
-									normal,
-									boost::this_thread::get_id());
+							logElem = mtfifo::LogElement(std::string("Odczytano dane: ") + buffer,
+									normal,	boost::this_thread::get_id());
 							log.put(logElem);
 						}
 						outputElem = mtfifo::TCPIPSerialized(buffer);

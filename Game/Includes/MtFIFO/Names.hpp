@@ -14,6 +14,7 @@ namespace mtfifo{
 	const std::string FIFO_LOG = "FIFO_LOG";
 	const std::string FIFO_TCPIP = "FIFO_TCPIP";
 	const std::string FIFO_DESERIALIZE = "FIFO_DESERIALIZE";
+	const std::string FIFO_TCPIP_EXIT = "FIFO_TCPIP_EXIT";
 }
 
 #endif /* GAME_INCLUDES_MTFIFO_NAMES_HPP_ */
