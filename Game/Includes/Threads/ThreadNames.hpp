@@ -12,7 +12,8 @@
 
 namespace thd{
 	const std::string LOGGER = "LOGGER";
-	const std::string TCPIP = "TCPIP";
+	const std::string TCPIP_RECEIVER = "TCPIP_RECEIVER";
+	const std::string TCPIP_SENDER = "TCPIP_SENDER";
 	const std::string FAKE = "FAKE";
 }
 

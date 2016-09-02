@@ -14,9 +14,9 @@
 
 //Boost
 #include <boost/any.hpp>
+#include <boost/chrono.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/log/core.hpp>
-#include <boost/chrono.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/sinks/text_file_backend.hpp>
 #include <boost/log/sources/severity_logger.hpp>

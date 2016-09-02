@@ -1,12 +1,12 @@
-/**
- * TCPIPThreadReceiver.hpp
+/*
+ * TCPIPThreadSender.hpp
  *
- *  Created on: 1 wrz 2016
+ *  Created on: 2 wrz 2016
  *      Author: Kamil Burzyñski
  */
 
-#ifndef GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADRECEIVER_HPP_
-#define GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADRECEIVER_HPP_
+#ifndef GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADSENDER_HPP_
+#define GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADSENDER_HPP_
 
 //Przenoœne podejœcie do socketów Windows/Linux
 #ifdef __WIN32__
@@ -30,13 +30,13 @@
 
 namespace thd{
 	//Konfiguracja po³¹czenia sieciowego
-	const int GAME_LISTEN_PORT = 3097; //TODO wyrzucic do pliku cpp
-	const int BUFFER_SIZE = 1024;
+	const int GAME_SEND_PORT = 3097;
+	//const int BUFFER_SIZE = 1024; //Ju¿ zdefiniowano
 
 	/**
 	 * Klasa zawieraj¹ca obs³ugê wejœciowego stosu internetowego
 	 */
-	class TCPIPThreadReciever{
+	class TCPIPThreadSender{
 	public:
 		void receiverInit(){//TODO do pliku cpp
 #ifdef __WIN32__
@@ -56,8 +56,8 @@ namespace thd{
 
 			//Ustawianie sockaddr_in
 			receiverIn_.sin_family = AF_INET;
-			receiverIn_.sin_port = htons(GAME_LISTEN_PORT);
-			receiverIn_.sin_addr.s_addr = INADDR_ANY; //Przyjmuj wszystkie adresy.
+			receiverIn_.sin_port = htons(GAME_SEND_PORT);
+			receiverIn_.sin_addr.s_addr = INADDR_ANY;
 
 			if(bind(receiverFd_, (struct sockaddr*)&receiverIn_, sizeof(struct sockaddr)) < 0)
 				assert(!"bind failed");
@@ -96,7 +96,7 @@ namespace thd{
 
 			boost::thread::id id = boost::this_thread::get_id();
 			thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
-			threadRegistration.registerThread(id, thd::TCPIP_RECEIVER);
+			threadRegistration.registerThread(id, thd::TCPIP_SENDER);
 
 			boost::any logElem;
 			boost::any outputElem;
@@ -130,7 +130,7 @@ namespace thd{
 					logElem = mtfifo::LogElement(std::string("Czekam na dane z socketa: ")
 							+ boost::lexical_cast<std::string>(realReceiverFd_)
 							+ std::string(" na porcie: ")
-							+ boost::lexical_cast<std::string>(GAME_LISTEN_PORT),
+							+ boost::lexical_cast<std::string>(GAME_SEND_PORT),
 							normal,	boost::this_thread::get_id());
 					log.put(logElem);
 
@@ -157,6 +157,14 @@ namespace thd{
 						}
 						outputElem = mtfifo::TCPIPSerialized(buffer);
 					}
+//					if(0){ //TODO jeœli jest co wys³ac, zrób to teraz
+//						if (send(realReceiverFd, /*new*/buffer, strlen(buffer), flags) < 0){
+//							 //TODO ERROR
+//							 close(realReceiverFd);
+//							 break;
+//						}
+//						//TODO send success
+//					}
 					boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME);
 		        }//while
 				close(realReceiverFd_);
@@ -166,7 +174,7 @@ namespace thd{
 			}//while
 		}
 
-		virtual ~TCPIPThreadReciever(){ //TODO wstawic do pliku cpp
+		virtual ~TCPIPThreadSender(){ //TODO wstawic do pliku cpp
 		}
 
 		private:
@@ -184,4 +192,7 @@ namespace thd{
 	};
 }
 
-#endif /* GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADRECEIVER_HPP_ */
+#endif /* GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADSENDER_HPP_ */
+
+
+#endif /* GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADSENDER_HPP_ */
