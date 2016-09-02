@@ -92,7 +92,7 @@ public:
 		threadRegistration.registerThread(id, thd::LOGGER);
 
 		ThreadTime& threadTime = ThreadTime::getInstance();
-		timeMaster = threadTime.factory();
+		timeMasterPtr_ = threadTime.factory();
 
 
 		boost::random::mt19937 rng;
@@ -104,10 +104,10 @@ public:
 				mtfifo::LogElement logElement = boost::any_cast<mtfifo::LogElement>(elem);
 				BOOST_LOG_SEV(log, logElement.level)
 					<< "[" << threadRegistration.getName(logElement.id) << "] " << logElement.value;
-			}catch (boost::bad_any_cast &e){
+			}catch(boost::bad_any_cast &e){
 				try{
 					boost::any_cast<boost::none_t>(elem);
-				}catch (boost::bad_any_cast &e){
+				}catch(boost::bad_any_cast &e){
 					try{
 						boost::any_cast<mtfifo::ExitThread>(elem);
 						break;
@@ -116,26 +116,26 @@ public:
 					}
 				}
 			}
-			wait = timeMaster->calculateTime(LOG_TIME, input.size());
+			wait_ = timeMasterPtr_->calculateTime(LOG_TIME, input.size());
 			if(ten(rng) == 1){ //Wiadomoœc debugowa. Œrednio co dziesi¹ta
 				elem = mtfifo::LogElement(
-						std::string("Czekam: ") + boost::lexical_cast<std::string>(wait)
+						std::string("Czekam: ") + boost::lexical_cast<std::string>(wait_)
 						+ " Rozmiar: " + boost::lexical_cast<std::string>(input.size()),
 						normal,
 						boost::this_thread::get_id());
 				output.put(elem);
 			}
-			boost::this_thread::sleep_for(wait);
+			boost::this_thread::sleep_for(wait_);
 		}
 	}
 
 	virtual ~LoggingThread(){ //TODO wstawic do pliku cpp
-		delete timeMaster; //Mo¿e byc niebezpieczne, jeœli timeMaster nie bêdzie zainicjalizowany
+		delete timeMasterPtr_; //Mo¿e byc niebezpieczne, jeœli timeMaster nie bêdzie zainicjalizowany
 	}
 
 	private:
-		TimeMaster *timeMaster;
-		boost::chrono::milliseconds wait;
+		TimeMaster *timeMasterPtr_;
+		boost::chrono::milliseconds wait_;
 };
 
 }

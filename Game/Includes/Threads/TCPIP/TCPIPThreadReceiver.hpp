@@ -27,13 +27,32 @@ namespace thd{
 	 */
 	class TCPIPThreadReciever{
 	public:
-		void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
+		void receiverInit(){//TODO do pliku cpp
 #ifdef __WIN32__
 			WORD versionWanted = MAKEWORD(1, 1);
 			WSADATA wsaData;
 			WSAStartup(versionWanted, &wsaData);
 #endif
+		}
+
+		void processInput(boost::any elem){ //Todo do pliku cpp
+        	try{
+				boost::any_cast<boost::none_t>(elem);
+			}catch(boost::bad_any_cast &e){
+				try{
+					boost::any_cast<mtfifo::ExitThread>(elem);
+					closeFlag_ = true;
+				}catch(boost::bad_any_cast &e){
+					assert(!"Unknown element type");
+				}
+			}
+		}
+
+		void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
+			receiverInit();
 			mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
+			mtfifo::FIFO<mtfifo::FIFOInput> input
+						= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_DESERIALIZE);
 			mtfifo::FIFO<mtfifo::FIFOOutput> output
 						= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_DESERIALIZE);
 			mtfifo::FIFO<mtfifo::FIFOOutput> log
@@ -43,22 +62,26 @@ namespace thd{
 			thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
 			threadRegistration.registerThread(id, thd::TCPIP);
 
+			boost::any logElem;
+			boost::any outputElem;
+
 			boost::random::mt19937 rng;
 			boost::random::uniform_int_distribution<> ten(1,10);
 
 			//Obs³uga socketów
 			struct sockaddr_in receiverIn;
-			std::memset(&receiverIn, 0, sizeof(receiverIn));
 			struct sockaddr_in client;
-			std::memset(&client, 0, sizeof(client));
-			socklen_t size;
+			socklen_t sizeSockaddrIn;
 			int receiverFd;
 			int realReceiverFd;
-			int flags = 0; //??
+			int socketFlags;
 			int recvResult;
 			char buffer[BUFFER_SIZE];
-		    std::memset(buffer, 0, sizeof(buffer)/sizeof(*buffer));
 			char optval;
+
+			std::memset(&receiverIn, 0, sizeof(receiverIn));
+			std::memset(&client, 0, sizeof(client));
+		    std::memset(buffer, 0, sizeof(buffer)/sizeof(*buffer));
 
 			if((receiverFd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 				assert(!"socked failed");
@@ -78,50 +101,80 @@ namespace thd{
 			if(listen(receiverFd, SOMAXCONN) < 0)
 				assert(!"listen failed");
 
+			sizeSockaddrIn = sizeof(struct sockaddr_in);
+			closeFlag_ = false;
+			socketFlags = 0;
+
 			while(1){
-		        size = sizeof(struct sockaddr_in);
-
-		        if((realReceiverFd = accept(receiverFd, (struct sockaddr*)&client, &size)) < 0){
-
+		        if((realReceiverFd = accept(receiverFd, (struct sockaddr*)&client,
+		        		&sizeSockaddrIn)) < 0){
+					logElem = mtfifo::LogElement(
+							std::string("accept nie zwróci³o poprawnej wartoœci"),
+							critical,
+							boost::this_thread::get_id());
+					log.put(logElem);
 		        	continue;
 		        }
 
 		        while(1){
-		        	recvResult = recv(realReceiverFd, buffer, BUFFER_SIZE, flags);
-					if(recvResult == -1){
-						assert(!"1");
-						//close(realReceiverFd); //??
-						//TODO CRITICAL
-					}else if(recvResult == 0){
-						//TODO ERROR
-						//close(realReceiverFd); //??
-						break;
-					}
-					buffer[recvResult] = '\0';
-					//TODO print to log and other queues
-					if(0){ //TODO jeœli jest co wys³ac, zrób to teraz
-						if (send(realReceiverFd, /*new*/buffer, strlen(buffer), flags) < 0){
-							 //TODO ERROR
-							 close(realReceiverFd);
-							 break;
-						}
-						//TODO send success
-					}
-					boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME);
-		        }
+		        	processInput(input.get());
+		        	if(closeFlag_)
+		        		break;
 
+		        	recvResult = recv(realReceiverFd, buffer, BUFFER_SIZE, socketFlags);
+					if(recvResult == -1){
+						logElem = mtfifo::LogElement(
+								std::string("recv zwróci³o wartoœc ujemn¹"),
+								critical,
+								boost::this_thread::get_id());
+						log.put(logElem);
+						close(realReceiverFd);
+						break;
+					}else if(recvResult == 0){
+						logElem = mtfifo::LogElement(
+								std::string("recv zwróci³o zakoñczenie po³¹czenia"),
+								error,
+								boost::this_thread::get_id());
+						log.put(logElem);
+						close(realReceiverFd);
+						break;
+					}else{
+						buffer[recvResult] = '\0';
+						if(ten(rng) > 0){ //Zawsze prawdziwe
+							logElem = mtfifo::LogElement(
+									std::string("Odczytano dane: ") + std::string(buffer),
+									normal,
+									boost::this_thread::get_id());
+							log.put(logElem);
+						}
+						outputElem = mtfifo::LogElement(
+								std::string("Odczytano dane: ") + std::string(buffer),
+								normal,
+								boost::this_thread::get_id());
+						output.put(outputElem);
+					}
+//					if(0){ //TODO jeœli jest co wys³ac, zrób to teraz
+//						if (send(realReceiverFd, /*new*/buffer, strlen(buffer), flags) < 0){
+//							 //TODO ERROR
+//							 close(realReceiverFd);
+//							 break;
+//						}
+//						//TODO send success
+//					}
+					boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME);
+		        }//while
 				close(realReceiverFd);
-				boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME);
-			}
+				if(closeFlag_)
+					break;
+				boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME * 2);
+			}//while
 		}
 
 		virtual ~TCPIPThreadReciever(){ //TODO wstawic do pliku cpp
-			//delete timeMaster; //Mo¿e byc niebezpieczne, jeœli timeMaster nie bêdzie zainicjalizowany
 		}
 
 		private:
-			//TimeMaster *timeMaster;
-			boost::chrono::milliseconds wait;
+			bool closeFlag_;
 	};
 }
 

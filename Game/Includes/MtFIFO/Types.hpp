@@ -61,6 +61,16 @@ namespace mtfifo{
 		boost::thread::id id;
 	};
 
+	struct TCPIPSerialized{
+		TCPIPSerialized(const std::string& serial){
+			serialized = serial;
+		}
+		TCPIPSerialized(const TCPIPSerialized& copy){
+			serialized = copy.serialized;
+		}
+		std::string serialized;
+	};
+
 	/**
 	 * Pusta struktura sygnalizuj¹ca koniecznoœc koñczenia w¹tku
 	 */
