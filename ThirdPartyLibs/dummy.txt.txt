@@ -1,0 +1,2 @@
+Ten plik jest konieczny, aby poprawnie uruchomiæ projekt Eclipse.
+Katalog ThirdPartyLibs nie jest ju¿ u¿ywany, jednak Eclipse wymaga jego obecnoœci.

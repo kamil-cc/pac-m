@@ -1,14 +1,14 @@
-/*
- * TCPIPThread.hpp
+/**
+ * TCPIPThreadReceiver.hpp
  *
  *  Created on: 1 wrz 2016
  *      Author: Kamil Burzyñski
  */
 
-#ifndef GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADRECIEVER_HPP_
-#define GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADRECIEVER_HPP_
+#ifndef GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADRECEIVER_HPP_
+#define GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADRECEIVER_HPP_
 
-//Standardowe podejœcie do programowania uniwersalnych socketów
+//Przenoœne podejœcie do socketów Windows/Linux
 #ifdef __WIN32__
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
@@ -34,10 +34,8 @@ namespace thd{
 			WSAStartup(versionWanted, &wsaData);
 #endif
 			mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
-			//mtfifo::FIFO<mtfifo::FIFOInput> input
-			//	= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_TCP);
 			mtfifo::FIFO<mtfifo::FIFOOutput> output
-						= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_TCPIP);
+						= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_DESERIALIZE);
 			mtfifo::FIFO<mtfifo::FIFOOutput> log
 									= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
 
@@ -45,13 +43,10 @@ namespace thd{
 			thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
 			threadRegistration.registerThread(id, thd::TCPIP);
 
-			//ThreadTime& threadTime = ThreadTime::getInstance();
-			//timeMaster = threadTime.factory();
-
 			boost::random::mt19937 rng;
 			boost::random::uniform_int_distribution<> ten(1,10);
 
-			//Sockety //TODO
+			//Obs³uga socketów
 			struct sockaddr_in receiverIn;
 			std::memset(&receiverIn, 0, sizeof(receiverIn));
 			struct sockaddr_in client;
@@ -59,8 +54,8 @@ namespace thd{
 			socklen_t size;
 			int receiverFd;
 			int realReceiverFd;
-			int flags = 0;
-			int recvResult; //TODO
+			int flags = 0; //??
+			int recvResult;
 			char buffer[BUFFER_SIZE];
 		    std::memset(buffer, 0, sizeof(buffer)/sizeof(*buffer));
 			char optval;
@@ -84,20 +79,12 @@ namespace thd{
 				assert(!"listen failed");
 
 			while(1){
-				/*wait = timeMaster->calculateTime(LOG_TIME, input.size());
-				if(ten(rng) == 1){ //Wiadomoœc debugowa. Œrednio co dziesi¹ta
-					elem = mtfifo::LogElement(
-							std::string("Czekam: ") + boost::lexical_cast<std::string>(wait)
-							+ " Rozmiar: " + boost::lexical_cast<std::string>(input.size()),
-							normal,
-							boost::this_thread::get_id());
-					output.put(elem);
-				}*/
-
 		        size = sizeof(struct sockaddr_in);
 
-		        if((realReceiverFd = accept(receiverFd, (struct sockaddr*)&client, &size)) < 0)
-		        	assert(!"accept failed");
+		        if((realReceiverFd = accept(receiverFd, (struct sockaddr*)&client, &size)) < 0){
+
+		        	continue;
+		        }
 
 		        while(1){
 		        	recvResult = recv(realReceiverFd, buffer, BUFFER_SIZE, flags);
@@ -120,21 +107,11 @@ namespace thd{
 						}
 						//TODO send success
 					}
+					boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME);
 		        }
 
 				close(realReceiverFd);
-		        //printf("Server got connection from client %s\n", inet_ntoa(dest.sin_addr));
-
-		        /*while(1) {
-
-				recvResult = recv(sender_fd, buffer, BUFFER_SIZE, flags);
-                if(recvResult == -1)
-                	;//assert(!"recv failed");
-                else if(recvResult == 0)
-                    assert(!"recv connection closed");
-                buffer[recvResult] = '\0'; //Dodaje znak koñca wiadomoœci
-                //TODO wys³anie wiadomoœci do loga*/
-				//boost::this_thread::sleep_for(wait);
+				boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME);
 			}
 		}
 
@@ -148,4 +125,4 @@ namespace thd{
 	};
 }
 
-#endif /* GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADRECIEVER_HPP_ */
+#endif /* GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADRECEIVER_HPP_ */

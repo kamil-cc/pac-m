@@ -20,7 +20,7 @@
 #include <Threads/Logging/LoggingThread.hpp>
 #include <iostream>
 #include <Threads/FakeSender/FakeSender.hpp>
-#include <Threads/TCPIP/TCPIPThreadReciever.hpp>
+#include <Threads/TCPIP/TCPIPThreadReceiver.hpp>
 
 //using namespace mtfifo;
 using namespace thd;

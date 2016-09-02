@@ -62,7 +62,9 @@ class LoggingThread{
 public:
 	void loggingInit(){//TODO Wyrzucic treœc do pliku .cpp
 		boost::log::register_simple_formatter_factory<severity_log_level, char>("Severity");
-		//TODO W tym miejscu mo¿na filtrowac
+		//W tym miejscu mo¿na regulowac poziom intensywnoœci loga.
+		boost::log::core::get()->set_filter(
+				boost::log::expressions::attr<severity_log_level>("Severity") >= normal/*notification*/);
 		//Log do pliku
 		boost::log::add_file_log(
 				boost::log::keywords::file_name  = "game.log",
@@ -91,6 +93,7 @@ public:
 
 		ThreadTime& threadTime = ThreadTime::getInstance();
 		timeMaster = threadTime.factory();
+
 
 		boost::random::mt19937 rng;
 		boost::random::uniform_int_distribution<> ten(1,10);
