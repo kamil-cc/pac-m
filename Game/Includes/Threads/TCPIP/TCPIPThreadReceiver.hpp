@@ -33,6 +33,31 @@ namespace thd{
 			WSADATA wsaData;
 			WSAStartup(versionWanted, &wsaData);
 #endif
+			std::memset(&receiverIn_, 0, sizeof(receiverIn_));
+			std::memset(&client_, 0, sizeof(client_));
+			std::memset(buffer_, 0, sizeof(buffer_)/sizeof(*buffer_));
+
+			if((receiverFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+				assert(!"socked failed");
+
+			if(setsockopt(receiverFd_, SOL_SOCKET, SO_REUSEADDR, &optval_, sizeof(optval_)) < 0)
+				assert(!"setsockopt failed");
+
+			//Ustawianie sockaddr_in
+			receiverIn_.sin_family = AF_INET;
+			receiverIn_.sin_port = htons(GAME_LISTEN_PORT);
+			receiverIn_.sin_addr.s_addr = INADDR_ANY;
+
+			if(bind(receiverFd_, (struct sockaddr*)&receiverIn_, sizeof(struct sockaddr)) < 0)
+				assert(!"bind failed");
+
+			//http://tangentsoft.net/wskfaq/advanced.html#backlog
+			if(listen(receiverFd_, SOMAXCONN) < 0)
+				assert(!"listen failed");
+
+			sizeSockaddrIn_ = sizeof(struct sockaddr_in);
+			closeFlag_ = false;
+			socketFlags_ = 0;
 		}
 
 		void processInput(boost::any elem){ //Todo do pliku cpp
@@ -68,46 +93,9 @@ namespace thd{
 			boost::random::mt19937 rng;
 			boost::random::uniform_int_distribution<> ten(1,10);
 
-			//Obs³uga socketów
-			struct sockaddr_in receiverIn;
-			struct sockaddr_in client;
-			socklen_t sizeSockaddrIn;
-			int receiverFd;
-			int realReceiverFd;
-			int socketFlags;
-			int recvResult;
-			char buffer[BUFFER_SIZE];
-			char optval;
-
-			std::memset(&receiverIn, 0, sizeof(receiverIn));
-			std::memset(&client, 0, sizeof(client));
-		    std::memset(buffer, 0, sizeof(buffer)/sizeof(*buffer));
-
-			if((receiverFd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-				assert(!"socked failed");
-
-			if(setsockopt(receiverFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
-				assert(!"setsockopt failed");
-
-			//Ustawianie sockaddr_in
-			receiverIn.sin_family = AF_INET;
-			receiverIn.sin_port = htons(GAME_LISTEN_PORT);
-			receiverIn.sin_addr.s_addr = INADDR_ANY;
-
-			if(bind(receiverFd, (struct sockaddr*)&receiverIn, sizeof(struct sockaddr)) < 0)
-				assert(!"bind failed");
-
-			//http://tangentsoft.net/wskfaq/advanced.html#backlog
-			if(listen(receiverFd, SOMAXCONN) < 0)
-				assert(!"listen failed");
-
-			sizeSockaddrIn = sizeof(struct sockaddr_in);
-			closeFlag_ = false;
-			socketFlags = 0;
-
 			while(1){
-		        if((realReceiverFd = accept(receiverFd, (struct sockaddr*)&client,
-		        		&sizeSockaddrIn)) < 0){
+		        if((realReceiverFd_ = accept(receiverFd_, (struct sockaddr*)&client_,
+		        		&sizeSockaddrIn_)) < 0){
 					logElem = mtfifo::LogElement(
 							std::string("accept nie zwróci³o poprawnej wartoœci"),
 							critical,
@@ -121,37 +109,42 @@ namespace thd{
 		        	if(closeFlag_)
 		        		break;
 
-		        	recvResult = recv(realReceiverFd, buffer, BUFFER_SIZE, socketFlags);
-					if(recvResult == -1){
+					logElem = mtfifo::LogElement(
+							std::string("Czekam na dane z socketa: ")
+							+ boost::lexical_cast<std::string>(realReceiverFd_)
+							+ std::string(" na porcie: ")
+							+ boost::lexical_cast<std::string>(GAME_LISTEN_PORT),
+							critical,
+							boost::this_thread::get_id());
+					log.put(logElem);
+		        	recvResult_ = recv(realReceiverFd_, buffer_, BUFFER_SIZE, socketFlags_);
+					if(recvResult_ == -1){
 						logElem = mtfifo::LogElement(
 								std::string("recv zwróci³o wartoœc ujemn¹"),
 								critical,
 								boost::this_thread::get_id());
 						log.put(logElem);
-						close(realReceiverFd);
+						close(realReceiverFd_);
 						break;
-					}else if(recvResult == 0){
+					}else if(recvResult_ == 0){
 						logElem = mtfifo::LogElement(
 								std::string("recv zwróci³o zakoñczenie po³¹czenia"),
 								error,
 								boost::this_thread::get_id());
 						log.put(logElem);
-						close(realReceiverFd);
+						close(realReceiverFd_);
 						break;
 					}else{
-						buffer[recvResult] = '\0';
+						buffer_[recvResult_] = '\0';
+						std::string buffer(buffer_);
 						if(ten(rng) > 0){ //Zawsze prawdziwe
 							logElem = mtfifo::LogElement(
-									std::string("Odczytano dane: ") + std::string(buffer),
+									std::string("Odczytano dane: ") + buffer,
 									normal,
 									boost::this_thread::get_id());
 							log.put(logElem);
 						}
-						outputElem = mtfifo::LogElement(
-								std::string("Odczytano dane: ") + std::string(buffer),
-								normal,
-								boost::this_thread::get_id());
-						output.put(outputElem);
+						outputElem = mtfifo::TCPIPSerialized(buffer);
 					}
 //					if(0){ //TODO jeœli jest co wys³ac, zrób to teraz
 //						if (send(realReceiverFd, /*new*/buffer, strlen(buffer), flags) < 0){
@@ -163,7 +156,7 @@ namespace thd{
 //					}
 					boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME);
 		        }//while
-				close(realReceiverFd);
+				close(realReceiverFd_);
 				if(closeFlag_)
 					break;
 				boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME * 2);
@@ -175,6 +168,16 @@ namespace thd{
 
 		private:
 			bool closeFlag_;
+			//Obs³uga socketów
+			struct sockaddr_in receiverIn_;
+			struct sockaddr_in client_;
+			socklen_t sizeSockaddrIn_;
+			int receiverFd_;
+			int realReceiverFd_;
+			int socketFlags_;
+			int recvResult_;
+			char buffer_[BUFFER_SIZE];
+			char optval_;
 	};
 }
 
