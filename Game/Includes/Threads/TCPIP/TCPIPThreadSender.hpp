@@ -12,7 +12,7 @@
 #ifdef __WIN32__
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
-	int close(int s) {return closesocket(s);}
+	//int close(int s) {return closesocket(s);} //Ju¿ zdefiniowano
 #else
 	#include <sys/socket.h>
 #endif
@@ -44,7 +44,7 @@ namespace thd{
 			WSADATA wsaData;
 			WSAStartup(versionWanted, &wsaData);
 #endif
-			std::memset(&receiverIn_, 0, sizeof(receiverIn_));
+			/*std::memset(&receiverIn_, 0, sizeof(receiverIn_));
 			std::memset(&client_, 0, sizeof(client_));
 			std::memset(buffer_, 0, sizeof(buffer_)/sizeof(*buffer_));
 
@@ -68,10 +68,10 @@ namespace thd{
 
 			sizeSockaddrIn_ = sizeof(struct sockaddr_in);
 			closeFlag_ = false;
-			socketFlags_ = 0;
+			socketFlags_ = 0;*/
 		}
 
-		void processInput(boost::any elem){ //Todo do pliku cpp
+		/*void processInput(boost::any elem){ //Todo do pliku cpp
         	try{
 				boost::any_cast<boost::none_t>(elem);
 			}catch(boost::bad_any_cast &e){
@@ -82,7 +82,7 @@ namespace thd{
 					assert(!"Unknown element type");
 				}
 			}
-		}
+		}*/
 
 		void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
 			receiverInit();
@@ -104,8 +104,35 @@ namespace thd{
 			boost::random::mt19937 rng;
 			boost::random::uniform_int_distribution<> ten(1,10);
 
+		    struct sockaddr_in server_info;
+		    struct hostent *he;
+		    int socket_fd, num;
+		    char buffer[1024];
+
+		    char buff[1024];
+
+		    if ((he = gethostbyname("example.com"))==NULL) {
+		        fprintf(stderr, "Cannot get host name\n");
+		        exit(1);
+		    }
+
+		    if ((socket_fd = socket(AF_INET, SOCK_STREAM, 0))== -1) {
+		        fprintf(stderr, "Socket Failure!!\n");
+		        exit(1);
+		    }
+
+		    memset(&server_info, 0, sizeof(server_info));
+		    server_info.sin_family = AF_INET;
+		    server_info.sin_port = htons(GAME_SEND_PORT);
+		    server_info.sin_addr = *((struct in_addr *)he->h_addr);
+		    if (connect(socket_fd, (struct sockaddr *)&server_info, sizeof(struct sockaddr))<0) {
+		        //fprintf(stderr, "Connection Failure\n");
+		        perror("connect");
+		        exit(1);
+		    }
+
 			while(1){
-				logElem = mtfifo::LogElement(std::string("Czekam na wykonanie siê accept"),
+				/*logElem = mtfifo::LogElement(std::string("Czekam na wykonanie siê accept"),
 						normal,	boost::this_thread::get_id());
 				log.put(logElem);
 
@@ -158,7 +185,7 @@ namespace thd{
 						outputElem = mtfifo::TCPIPSerialized(buffer);
 					}
 //					if(0){ //TODO jeœli jest co wys³ac, zrób to teraz
-//						if (send(realReceiverFd, /*new*/buffer, strlen(buffer), flags) < 0){
+//						if (send(realReceiverFd, new buffer, strlen(buffer), flags) < 0){
 //							 //TODO ERROR
 //							 close(realReceiverFd);
 //							 break;
@@ -170,7 +197,7 @@ namespace thd{
 				close(realReceiverFd_);
 				if(closeFlag_)
 					break;
-				boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME * 2);
+				boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME * 2);*/
 			}//while
 		}
 
@@ -178,7 +205,7 @@ namespace thd{
 		}
 
 		private:
-			bool closeFlag_;
+			/*bool closeFlag_;
 			//Obs³uga socketów
 			struct sockaddr_in receiverIn_;
 			struct sockaddr_in client_;
@@ -188,11 +215,9 @@ namespace thd{
 			int socketFlags_;
 			int recvResult_;
 			char buffer_[BUFFER_SIZE];
-			char optval_;
+			char optval_;*/
 	};
 }
 
 #endif /* GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADSENDER_HPP_ */
 
-
-#endif /* GAME_INCLUDES_THREADS_TCPIP_TCPIPTHREADSENDER_HPP_ */

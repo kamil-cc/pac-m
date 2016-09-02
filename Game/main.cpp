@@ -21,6 +21,7 @@
 #include <iostream>
 #include <Threads/FakeSender/FakeSender.hpp>
 #include <Threads/TCPIP/TCPIPThreadReceiver.hpp>
+#include <Threads/TCPIP/TCPIPThreadSender.hpp>
 
 //using namespace mtfifo;
 using namespace thd;
