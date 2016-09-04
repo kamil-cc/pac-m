@@ -64,7 +64,7 @@ public:
 		boost::log::register_simple_formatter_factory<severity_log_level, char>("Severity");
 		//W tym miejscu mo¿na regulowac poziom intensywnoœci loga.
 		boost::log::core::get()->set_filter(
-				boost::log::expressions::attr<severity_log_level>("Severity") >= normal/*notification*/);
+				boost::log::expressions::attr<severity_log_level>("Severity") >= /*normal*/notification);
 		//Log do pliku
 		boost::log::add_file_log(
 				boost::log::keywords::file_name  = "game.log",

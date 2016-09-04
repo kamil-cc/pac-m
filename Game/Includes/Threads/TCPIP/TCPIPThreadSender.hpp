@@ -1,4 +1,4 @@
-/*
+/**
  * TCPIPThreadSender.hpp
  *
  *  Created on: 2 wrz 2016
@@ -12,8 +12,13 @@
 #ifdef __WIN32__
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
+extern "C" {
+	#include <inet_pton.h>
+}
 	//int close(int s) {return closesocket(s);} //Ju¿ zdefiniowano
 #else
+	#include <arpa/inet.h>
+	#include <fcntl.h>
 	#include <sys/socket.h>
 #endif
 
@@ -30,7 +35,9 @@
 
 namespace thd{
 	//Konfiguracja po³¹czenia sieciowego
-	const int GAME_SEND_PORT = 3097;
+	const int GAME_SEND_PORT = 3098; //TODO wyrzucic do sk³adowej static
+	const char* SERVER_ADDRESS= "127.0.0.1";
+	const int MAX_ERROR_COUNTER = 15; //Arbitralnie dobrana wielkoœc
 	//const int BUFFER_SIZE = 1024; //Ju¿ zdefiniowano
 
 	/**
@@ -44,34 +51,26 @@ namespace thd{
 			WSADATA wsaData;
 			WSAStartup(versionWanted, &wsaData);
 #endif
-			/*std::memset(&receiverIn_, 0, sizeof(receiverIn_));
-			std::memset(&client_, 0, sizeof(client_));
-			std::memset(buffer_, 0, sizeof(buffer_)/sizeof(*buffer_));
-
-			if((receiverFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-				assert(!"socked failed");
-
-			if(setsockopt(receiverFd_, SOL_SOCKET, SO_REUSEADDR, &optval_, sizeof(optval_)) < 0)
-				assert(!"setsockopt failed");
-
-			//Ustawianie sockaddr_in
-			receiverIn_.sin_family = AF_INET;
-			receiverIn_.sin_port = htons(GAME_SEND_PORT);
-			receiverIn_.sin_addr.s_addr = INADDR_ANY;
-
-			if(bind(receiverFd_, (struct sockaddr*)&receiverIn_, sizeof(struct sockaddr)) < 0)
-				assert(!"bind failed");
-
-			//http://tangentsoft.net/wskfaq/advanced.html#backlog
-			if(listen(receiverFd_, SOMAXCONN) < 0)
-				assert(!"listen failed");
-
-			sizeSockaddrIn_ = sizeof(struct sockaddr_in);
-			closeFlag_ = false;
-			socketFlags_ = 0;*/
 		}
 
-		/*void processInput(boost::any elem){ //Todo do pliku cpp
+		bool setBlockingMode(const int& socket, const bool blocking){ //TODO do pliku cpp
+#ifdef __WIN32__
+			unsigned long mode = blocking ? 0 : 1;
+			if(ioctlsocket(socket, FIONBIO, &mode) == 0)
+			   return true;
+			return false;
+#else
+			int flags = fcntl(socket, F_GETFL, 0);
+			if (flags < 0)
+				return false;
+			flags = blocking ? (flags&~O_NONBLOCK) : (flags|O_NONBLOCK);
+			if(fcntl(socket, F_SETFL, flags) == 0))
+				return true;
+			return false;
+#endif
+		}
+
+		void processInput(boost::any elem){ //Todo do pliku cpp
         	try{
 				boost::any_cast<boost::none_t>(elem);
 			}catch(boost::bad_any_cast &e){
@@ -82,15 +81,15 @@ namespace thd{
 					assert(!"Unknown element type");
 				}
 			}
-		}*/
+		}
 
 		void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
 			receiverInit();
 			mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
 			mtfifo::FIFO<mtfifo::FIFOInput> input
-						= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_TCPIP_EXIT);
-			mtfifo::FIFO<mtfifo::FIFOOutput> output
-						= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_DESERIALIZE);
+						= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_TCPIP_SEN_EXIT);
+			mtfifo::FIFO<mtfifo::FIFOInput> input2
+						= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_SERIALIZED_INPUT);
 			mtfifo::FIFO<mtfifo::FIFOOutput> log
 									= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
 
@@ -98,115 +97,103 @@ namespace thd{
 			thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
 			threadRegistration.registerThread(id, thd::TCPIP_SENDER);
 
-			boost::any logElem;
-			boost::any outputElem;
+			boost::any elem;
 
 			boost::random::mt19937 rng;
 			boost::random::uniform_int_distribution<> ten(1,10);
 
-		    struct sockaddr_in server_info;
-		    struct hostent *he;
-		    int socket_fd, num;
-		    char buffer[1024];
+			mtfifo::LogElement logMsg = mtfifo::LogElement();
+			logMsg << id;
 
-		    char buff[1024];
+		    struct sockaddr_in server;
+		    struct hostent *host;
+		    int socketFd, num;
+		    char buffer[BUFFER_SIZE];
 
-		    if ((he = gethostbyname("example.com"))==NULL) {
-		        fprintf(stderr, "Cannot get host name\n");
-		        exit(1);
-		    }
+		    char buff[BUFFER_SIZE];
 
-		    if ((socket_fd = socket(AF_INET, SOCK_STREAM, 0))== -1) {
-		        fprintf(stderr, "Socket Failure!!\n");
-		        exit(1);
-		    }
+		    struct in_addr ipv4addr;
+		    std::memset(&ipv4addr, 0, sizeof(ipv4addr));
+		    /*if((host = gethostbyname("example.com")) == NULL){
+				assert(!"gethostbyname failed");
+		    }*/
 
-		    memset(&server_info, 0, sizeof(server_info));
-		    server_info.sin_family = AF_INET;
-		    server_info.sin_port = htons(GAME_SEND_PORT);
-		    server_info.sin_addr = *((struct in_addr *)he->h_addr);
-		    if (connect(socket_fd, (struct sockaddr *)&server_info, sizeof(struct sockaddr))<0) {
-		        //fprintf(stderr, "Connection Failure\n");
-		        perror("connect");
-		        exit(1);
-		    }
+		    inet_pton(AF_INET, SERVER_ADDRESS, &ipv4addr);
+
+		    if((host = gethostbyaddr((const char *)&ipv4addr,
+		    		sizeof(struct in_addr), AF_INET)) == NULL)
+		    	assert(!"gethostbyaddr failed");
+
+		    logMsg << notification;
+		    logMsg << "gethostbyaddr returned: " + std::string(*((struct in_addr *)host->h_addr));
+		    log << logMsg;
+
+
+		    if((socketFd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		    	assert(!"socket failed");
+
+		    if(!setBlockingMode(socketFd, false))
+		    	assert("setBlockingMode failed, 2nd");
+
+		    logMsg << normal;
+		    logMsg << "setting nonblocking mode, 2nd";
+		    log << logMsg;
+
+		    std::memset(&server, 0, sizeof(server));
+		    server.sin_family = AF_INET;
+		    server.sin_port = htons(GAME_SEND_PORT);
+		    server.sin_addr = *((struct in_addr *)host->h_addr);
+		    if(connect(socketFd, (struct sockaddr *)&server, sizeof(struct sockaddr)) < 0)
+		        assert(!"connect failed");
+
+		    errorCounter = 0;
 
 			while(1){
-				/*logElem = mtfifo::LogElement(std::string("Czekam na wykonanie siê accept"),
-						normal,	boost::this_thread::get_id());
-				log.put(logElem);
-
-		        if((realReceiverFd_ = accept(receiverFd_, (struct sockaddr*)&client_,
-		        		&sizeSockaddrIn_)) < 0){
-					logElem = mtfifo::LogElement(std::string("accept nie zwróci³o poprawnej wartoœci"),
-							critical, boost::this_thread::get_id());
-					log.put(logElem);
-		        	continue;
-		        }
-
-				logElem = mtfifo::LogElement(std::string("accept wykonane poprawnie. Zwrócono: ")
-						+ boost::lexical_cast<std::string>(realReceiverFd_),
-						normal,	boost::this_thread::get_id());
-				log.put(logElem);
-
-		        while(1){
-		        	processInput(input.get());
-		        	if(closeFlag_)
-		        		break;
-
-					logElem = mtfifo::LogElement(std::string("Czekam na dane z socketa: ")
-							+ boost::lexical_cast<std::string>(realReceiverFd_)
-							+ std::string(" na porcie: ")
-							+ boost::lexical_cast<std::string>(GAME_SEND_PORT),
-							normal,	boost::this_thread::get_id());
-					log.put(logElem);
-
-		        	recvResult_ = recv(realReceiverFd_, buffer_, BUFFER_SIZE, socketFlags_);
-					if(recvResult_ == -1){
-						logElem = mtfifo::LogElement(std::string("recv zwróci³o wartoœc ujemn¹"),
-								critical, boost::this_thread::get_id());
-						log.put(logElem);
-						close(realReceiverFd_);
-						break;
-					}else if(recvResult_ == 0){
-						logElem = mtfifo::LogElement(std::string("recv zwróci³o zakoñczenie po³¹czenia"),
-								error, boost::this_thread::get_id());
-						log.put(logElem);
-						close(realReceiverFd_);
-						break;
-					}else{
-						buffer_[recvResult_] = '\0';
-						std::string buffer(buffer_);
-						if(ten(rng) > 0){ //Zawsze prawdziwe
-							logElem = mtfifo::LogElement(std::string("Odczytano dane: ") + buffer,
-									normal,	boost::this_thread::get_id());
-							log.put(logElem);
-						}
-						outputElem = mtfifo::TCPIPSerialized(buffer);
+	        	processInput(input.get()); //Sprawdzenie czy wydano sygna³ zakoñczenia w¹tku
+	        	if(closeFlag_)
+	        		break;
+				//buffer = "some message"; //TODO usun¹c
+				elem = input2.get();
+				try{
+					boost::any_cast<boost::none_t>(elem);
+					boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
+					continue;
+				}catch(boost::bad_any_cast &e){
+					try{
+						mtfifo::TCPIPSerialized msgToSend = boost::any_cast<mtfifo::TCPIPSerialized>(elem);
+						const char *message = msgToSend.serialized.c_str();
+						std::strncpy(buffer, message, sizeof(message));
+					}catch(boost::bad_any_cast &e){
+						assert(!"Unknown element type");
 					}
-//					if(0){ //TODO jeœli jest co wys³ac, zrób to teraz
-//						if (send(realReceiverFd, new buffer, strlen(buffer), flags) < 0){
-//							 //TODO ERROR
-//							 close(realReceiverFd);
-//							 break;
-//						}
-//						//TODO send success
-//					}
-					boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME);
-		        }//while
-				close(realReceiverFd_);
-				if(closeFlag_)
-					break;
-				boost::this_thread::sleep_for(TCPIP_RECEIVER_TIME * 2);*/
+				}
+		        if((send(socketFd, buffer, strlen(buffer), 0)) < 0){
+					logMsg << critical;
+					logMsg << "send failed";
+					log << logMsg;
+					++errorCounter;
+					if(errorCounter < MAX_ERROR_COUNTER){
+						close(socketFd);
+						assert(!"send failed");
+					}
+		        }else{
+		        	errorCounter = 0;
+					logMsg << normal;
+					logMsg << "send ok: " + std::string();
+					log << logMsg;
+		        }
+				boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
 			}//while
+			close(socketFd);
 		}
 
 		virtual ~TCPIPThreadSender(){ //TODO wstawic do pliku cpp
 		}
 
 		private:
-			/*bool closeFlag_;
-			//Obs³uga socketów
+			bool closeFlag_;
+			int errorCounter;
+			/*//Obs³uga socketów
 			struct sockaddr_in receiverIn_;
 			struct sockaddr_in client_;
 			socklen_t sizeSockaddrIn_;

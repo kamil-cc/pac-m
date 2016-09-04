@@ -23,6 +23,7 @@ public:
 	inline void put(boost::any elem) {io_fifo_.put(elem);} //Wrappery typu inline
 	inline boost::any get() {return io_fifo_.get();}
 	inline std::size_t size(){return io_fifo_.size();}
+	FIFO operator<<(const boost::any& rhs){io_fifo_.put(rhs); return *this;}
 private:
 	IO io_fifo_;
 };

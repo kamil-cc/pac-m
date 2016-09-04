@@ -45,6 +45,10 @@ namespace mtfifo{
 	 * Wiadomoœc w logu
 	 */
 	struct LogElement{
+		LogElement(){
+			value.clear();
+			level = normal;
+		}
 		LogElement(const std::string& elem, const severity_log_level& lvl,
 				const boost::thread::id& tid){
 			value = elem;
@@ -55,6 +59,20 @@ namespace mtfifo{
 			value = copy.value;
 			level = copy.level;
 			id = copy.id;
+		}
+		LogElement operator<<(const boost::thread::id& setId){
+			id = setId;
+			value.clear();
+			level = normal;
+			return *this;
+		}
+		LogElement operator<<(const severity_log_level& setLevel){
+			level = setLevel;
+			return *this;
+		}
+		LogElement operator<<(const std::string& setValue){
+			value = std::string(setValue);
+			return *this;
 		}
 		std::string value;
 		severity_log_level level;
