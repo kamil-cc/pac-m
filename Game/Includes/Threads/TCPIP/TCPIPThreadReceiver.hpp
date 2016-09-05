@@ -179,7 +179,7 @@ namespace thd{
 
 		        	if(blockingFlag_){
 		        		setBlockingMode(realReceiverFd_, false);
-			        	logMsg << notification;
+			        	logMsg << critical;
 						logMsg << "Próba ponownego prze³¹czenia w tryb nieblokuj¹cy";
 						log << logMsg;
 		        	}
@@ -205,6 +205,9 @@ namespace thd{
 						char errorNameBuffer[BUFFER_SIZE];
 						std::memset(errorNameBuffer, 0, sizeof(errorNameBuffer));
 						std::wcstombs(errorNameBuffer, errorTxt, BUFFER_SIZE); //Konwersja do char*
+						logMsg << critical;
+						logMsg << boost::lexical_cast<std::string>(errNumber)
+								+ " oznaczaj¹c¹: " + std::string(errorNameBuffer);
 						LocalFree(errorTxt); //Konieczne ze wzglêdu na mo¿liwy wyciek pamiêci
 						//TODO W tym miejscu prze³¹czenie na socket nieblokuj¹cy
 						//TODO odeberanie porcji danych i prze³¹czenie z powrotem
@@ -216,14 +219,16 @@ namespace thd{
 						log << logMsg;
 						//TODO Analogiczne uwagi jak w poprzednim ifdefie
 #endif
-						logMsg << critical;
-						logMsg << boost::lexical_cast<std::string>(errNumber)
-								+ " oznaczaj¹c¹: " + boost::trim(std::string())
-								+ "\nPrze³¹czam w tryb blokuj¹cy."; //Wiadomoœc do loga
-						log << logMsg;
-						setBlockingMode(realReceiverFd_, true);
-						//close(realReceiverFd_);
-						//break;
+						if((errNumber == WSAEWOULDBLOCK)
+								|| ((errno == EWOULDBLOCK) || (errno == EAGAIN))){
+							logMsg << critical;
+							logMsg << "Prze³¹czam w tryb blokuj¹cy."; //Wiadomoœc do loga
+							log << logMsg;
+							setBlockingMode(realReceiverFd_, true);
+						}else{
+							close(realReceiverFd_); //TODO Zakomentowac??
+							break;
+						}
 					}else if(recvResult_ == 0){
 						logMsg << notification;
 						logMsg << "recv zwróci³o zakoñczenie po³¹czenia";
