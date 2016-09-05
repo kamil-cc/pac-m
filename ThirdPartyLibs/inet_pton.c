@@ -22,7 +22,7 @@
 
 //#include "inet_addr-int.h"
 
-#define AF_INET 1 //KB
+#include <winsock2.h> //KB
 typedef unsigned char u_char; //KB
 
 #include <string.h>

@@ -107,25 +107,21 @@ namespace thd{
 
 		    struct sockaddr_in server;
 		    struct hostent *host;
-		    int socketFd, num;
+		    int socketFd;
 		    char buffer[BUFFER_SIZE];
-
-		    char buff[BUFFER_SIZE];
-
 		    struct in_addr ipv4addr;
 		    std::memset(&ipv4addr, 0, sizeof(ipv4addr));
-		    /*if((host = gethostbyname("example.com")) == NULL){
-				assert(!"gethostbyname failed");
-		    }*/
 
 		    inet_pton(AF_INET, SERVER_ADDRESS, &ipv4addr);
+		    //inet_aton(SERVER_ADDRESS, &ipv4addr);
 
 		    if((host = gethostbyaddr((const char *)&ipv4addr,
 		    		sizeof(struct in_addr), AF_INET)) == NULL)
 		    	assert(!"gethostbyaddr failed");
 
 		    logMsg << notification;
-		    logMsg << "gethostbyaddr returned: " + std::string(*((struct in_addr *)host->h_addr));
+		    logMsg << std::string("gethostbyaddr zwróci³o: ")
+		    	+ inet_ntoa(*((struct in_addr *)host->h_addr));
 		    log << logMsg;
 
 
@@ -143,47 +139,64 @@ namespace thd{
 		    server.sin_family = AF_INET;
 		    server.sin_port = htons(GAME_SEND_PORT);
 		    server.sin_addr = *((struct in_addr *)host->h_addr);
-		    if(connect(socketFd, (struct sockaddr *)&server, sizeof(struct sockaddr)) < 0)
-		        assert(!"connect failed");
 
-		    errorCounter = 0;
+	    	closeFlag_ = false;
 
-			while(1){
-	        	processInput(input.get()); //Sprawdzenie czy wydano sygna³ zakoñczenia w¹tku
-	        	if(closeFlag_)
-	        		break;
-				//buffer = "some message"; //TODO usun¹c
-				elem = input2.get();
-				try{
-					boost::any_cast<boost::none_t>(elem);
-					boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
-					continue;
-				}catch(boost::bad_any_cast &e){
+		    while(1){
+		    	processInput(input.get());
+				if(closeFlag_)
+					break;
+
+		    	if(connect(socketFd, (struct sockaddr *)&server, sizeof(struct sockaddr)) < 0){
+		    		logMsg << notification;
+		    		logMsg << "connect failed";
+		    		log << logMsg;
+		    		boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
+		    		continue;
+		    	}
+
+		    	errorCounter = 0;
+
+				while(1){
+					processInput(input.get()); //Sprawdzenie czy wydano sygna³ zakoñczenia w¹tku
+					if(closeFlag_)
+						break;
+					//buffer = "some message"; //TODO usun¹c
+					elem = input2.get();
 					try{
-						mtfifo::TCPIPSerialized msgToSend = boost::any_cast<mtfifo::TCPIPSerialized>(elem);
-						const char *message = msgToSend.serialized.c_str();
-						std::strncpy(buffer, message, sizeof(message));
+						boost::any_cast<boost::none_t>(elem);
+						boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
+						continue;
 					}catch(boost::bad_any_cast &e){
-						assert(!"Unknown element type");
+						try{
+							mtfifo::TCPIPSerialized msgToSend =
+									boost::any_cast<mtfifo::TCPIPSerialized>(elem);
+							//const char *message = msgToSend.serialized.c_str();
+							const char *message = "cosCOSCOSCOSCOSCOSCOSCOSCOSCOSCOSCOSCOS";
+							std::strncpy(buffer, message, sizeof(message)/sizeof(*message));
+						}catch(boost::bad_any_cast &e){
+							assert(!"Unknown element type");
+						}
 					}
-				}
-		        if((send(socketFd, buffer, strlen(buffer), 0)) < 0){
-					logMsg << critical;
-					logMsg << "send failed";
-					log << logMsg;
-					++errorCounter;
-					if(errorCounter < MAX_ERROR_COUNTER){
-						close(socketFd);
-						assert(!"send failed");
+					if((send(socketFd, buffer, strlen(buffer), 0)) < 0){
+						logMsg << critical;
+						logMsg << "send failed";
+						log << logMsg;
+						++errorCounter;
+						if(errorCounter < MAX_ERROR_COUNTER){
+							close(socketFd);
+							assert(!"send failed");
+						}
+					}else{
+						errorCounter = 0;
+						logMsg << normal;
+						logMsg << "send ok: " + std::string();
+						log << logMsg;
 					}
-		        }else{
-		        	errorCounter = 0;
-					logMsg << normal;
-					logMsg << "send ok: " + std::string();
-					log << logMsg;
-		        }
-				boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
-			}//while
+					boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
+				}//while
+				boost::this_thread::sleep_for(TCPIP_SENDER_TIME * 2);
+		    }//while
 			close(socketFd);
 		}
 
