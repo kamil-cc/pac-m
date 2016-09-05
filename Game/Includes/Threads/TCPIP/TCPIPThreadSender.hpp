@@ -151,23 +151,23 @@ namespace thd{
 						break;
 
 					elem = input2.get();
-					//try{
-					//	boost::any_cast<boost::none_t>(elem);
-					//	boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
-					//	continue;
-					//}catch(boost::bad_any_cast &e){
-					//	try{
-							//mtfifo::TCPIPSerialized msgToSend =
-							//		boost::any_cast<mtfifo::TCPIPSerialized>(elem);
-							//const char *message = msgToSend.serialized.c_str(); //Gwarancja, ¿e jest null terminated
-							const char *message = "1234567890abcdefghijklmnoprstuvwxyqvz\0";
+					try{
+						boost::any_cast<boost::none_t>(elem);
+						boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
+						continue;
+					}catch(boost::bad_any_cast &e){
+						try{
+							mtfifo::TCPIPSerialized msgToSend =
+									boost::any_cast<mtfifo::TCPIPSerialized>(elem);
+							//Gwarancja, ¿e jest null terminated
+							const char *message = msgToSend.serialized.c_str();
 							if((std::strlen(message) + 1) > BUFFER_SIZE)
 								assert(!"serialized message is too big");
 							std::strcpy(buffer_, message);
-					//	}catch(boost::bad_any_cast &e){
-					//		assert(!"Unknown element type");
-					//	}
-					//}
+						}catch(boost::bad_any_cast &e){
+							assert(!"Unknown element type");
+						}
+					}
 					if((send(socketFd_, buffer_, strlen(buffer_), 0)) < 0){
 						logMsg << critical;
 						logMsg << "send zwróci³o wartoœc ujemn¹";

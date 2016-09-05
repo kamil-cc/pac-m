@@ -38,7 +38,7 @@
 
 namespace thd{
 	//Konfiguracja po³¹czenia sieciowego
-	const int GAME_LISTEN_PORT = 3097; //TODO wyrzucic do pliku cpp i zrobic ustawialne
+	const int GAME_LISTEN_PORT = 3098; //TODO wyrzucic do pliku cpp i zrobic ustawialne
 	const int BUFFER_SIZE = 1024;
 
 	/**
