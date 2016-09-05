@@ -63,21 +63,11 @@ namespace thd{
 		    		sizeof(struct in_addr), AF_INET)) == NULL)
 		    	assert(!"gethostbyaddr failed");
 
-		    //logMsg << notification;
-		    //logMsg << std::string("gethostbyaddr zwróci³o: ")
-		    //	+ inet_ntoa(*((struct in_addr *)host_->h_addr));
-		    //log << logMsg;
-
-
 		    if((socketFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		    	assert(!"socket failed");
 
 		    if(!setBlockingMode(socketFd_, false))
 		    	assert("setBlockingMode failed, 2nd");
-
-		    //logMsg << normal;
-		    //logMsg << "ustawiono tryb nieblokuj¹cy 2";
-		    //log << logMsg;
 
 		    std::memset(&server_, 0, sizeof(server_));
 		    server_.sin_family = AF_INET;
