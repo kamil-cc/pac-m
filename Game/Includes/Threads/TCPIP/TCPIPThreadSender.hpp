@@ -51,6 +51,40 @@ namespace thd{
 			WSADATA wsaData;
 			WSAStartup(versionWanted, &wsaData);
 #endif
+		    std::memset(&ipv4addr_, 0, sizeof(ipv4addr_));
+
+#ifdef __WIN32__
+		    inet_pton(AF_INET, SERVER_ADDRESS, &ipv4addr_);
+#else
+		    inet_aton(SERVER_ADDRESS, &ipv4addr_);
+#endif
+
+		    if((host_ = gethostbyaddr((const char *)&ipv4addr_,
+		    		sizeof(struct in_addr), AF_INET)) == NULL)
+		    	assert(!"gethostbyaddr failed");
+
+		    //logMsg << notification;
+		    //logMsg << std::string("gethostbyaddr zwróci³o: ")
+		    //	+ inet_ntoa(*((struct in_addr *)host_->h_addr));
+		    //log << logMsg;
+
+
+		    if((socketFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		    	assert(!"socket failed");
+
+		    if(!setBlockingMode(socketFd_, false))
+		    	assert("setBlockingMode failed, 2nd");
+
+		    //logMsg << normal;
+		    //logMsg << "ustawiono tryb nieblokuj¹cy 2";
+		    //log << logMsg;
+
+		    std::memset(&server_, 0, sizeof(server_));
+		    server_.sin_family = AF_INET;
+		    server_.sin_port = htons(GAME_SEND_PORT);
+		    server_.sin_addr = *((struct in_addr *)host_->h_addr);
+
+	    	closeFlag_ = false;
 		}
 
 		bool setBlockingMode(const int& socket, const bool blocking){ //TODO do pliku cpp
@@ -105,49 +139,12 @@ namespace thd{
 			mtfifo::LogElement logMsg = mtfifo::LogElement();
 			logMsg << id;
 
-		    struct sockaddr_in server;
-		    struct hostent *host;
-		    int socketFd;
-		    char buffer[BUFFER_SIZE];
-		    struct in_addr ipv4addr;
-		    std::memset(&ipv4addr, 0, sizeof(ipv4addr));
-
-		    inet_pton(AF_INET, SERVER_ADDRESS, &ipv4addr);
-		    //inet_aton(SERVER_ADDRESS, &ipv4addr);
-
-		    if((host = gethostbyaddr((const char *)&ipv4addr,
-		    		sizeof(struct in_addr), AF_INET)) == NULL)
-		    	assert(!"gethostbyaddr failed");
-
-		    logMsg << notification;
-		    logMsg << std::string("gethostbyaddr zwróci³o: ")
-		    	+ inet_ntoa(*((struct in_addr *)host->h_addr));
-		    log << logMsg;
-
-
-		    if((socketFd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		    	assert(!"socket failed");
-
-		    if(!setBlockingMode(socketFd, false))
-		    	assert("setBlockingMode failed, 2nd");
-
-		    logMsg << normal;
-		    logMsg << "ustawiono tryb nieblokuj¹cy 2";
-		    log << logMsg;
-
-		    std::memset(&server, 0, sizeof(server));
-		    server.sin_family = AF_INET;
-		    server.sin_port = htons(GAME_SEND_PORT);
-		    server.sin_addr = *((struct in_addr *)host->h_addr);
-
-	    	closeFlag_ = false;
-
 		    while(1){
 		    	processInput(input.get());
 				if(closeFlag_)
 					break;
 
-		    	if(connect(socketFd, (struct sockaddr *)&server, sizeof(struct sockaddr)) < 0){
+		    	if(connect(socketFd_, (struct sockaddr *)&server_, sizeof(struct sockaddr)) < 0){
 		    		logMsg << notification;
 		    		logMsg << "connect zwróci³o wartoœc ujemn¹";
 		    		log << logMsg;
@@ -173,31 +170,31 @@ namespace thd{
 									boost::any_cast<mtfifo::TCPIPSerialized>(elem);
 							//const char *message = msgToSend.serialized.c_str(); //TODO
 							const char *message = "cosCOSCOSCOSCOSCOSCOSCOSCOSCOSCOSCOSCOS";
-							std::strncpy(buffer, message, sizeof(message)/sizeof(*message));
+							std::strncpy(buffer_, message, sizeof(message)/sizeof(*message));
 						}catch(boost::bad_any_cast &e){
 							assert(!"Unknown element type");
 						}
 					}
-					if((send(socketFd, buffer, strlen(buffer), 0)) < 0){
+					if((send(socketFd_, buffer_, strlen(buffer_), 0)) < 0){
 						logMsg << critical;
 						logMsg << "send zwróci³o wartoœc ujemn¹";
 						log << logMsg;
 						++errorCounter_;
 						if(errorCounter_ < MAX_ERROR_COUNTER){
-							close(socketFd);
+							close(socketFd_);
 							assert(!"send failed");
 						}
 					}else{
 						errorCounter_ = 0;
 						logMsg << normal;
-						logMsg << "send powiod³o siê, wys³ano: " + std::string(buffer);
+						logMsg << "send powiod³o siê, wys³ano: " + std::string(buffer_);
 						log << logMsg;
 					}
 					boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
 				}//while
 				boost::this_thread::sleep_for(TCPIP_SENDER_TIME * 2);
 		    }//while
-			close(socketFd);
+			close(socketFd_);
 		}
 
 		virtual ~TCPIPThreadSender(){ //TODO wstawic do pliku cpp
@@ -206,6 +203,12 @@ namespace thd{
 		private:
 			bool closeFlag_;
 			int errorCounter_;
+			//Sockety
+		    struct sockaddr_in server_;
+		    struct hostent *host_;
+		    int socketFd_;
+		    char buffer_[BUFFER_SIZE];
+		    struct in_addr ipv4addr_;
 	};
 }
 
