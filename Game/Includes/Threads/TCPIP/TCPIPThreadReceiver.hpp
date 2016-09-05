@@ -15,6 +15,7 @@
 	#include <winbase.h>
 	int close(int s) {return closesocket(s);}
 #else
+	#include <cerrno>
 	#include <fcntl.h>
 	#include <sys/socket.h>
 #endif
@@ -169,33 +170,43 @@ namespace thd{
 							+ " na porcie: " + boost::lexical_cast<std::string>(GAME_LISTEN_PORT);
 					log << logMsg;
 
+
 		        	recvResult_ = recv(realReceiverFd_, buffer_, BUFFER_SIZE, socketFlags_);
 					if(recvResult_ <= -1){
 						logMsg << critical;
 						std::string recvErrorMsg = "recv zwróci³o wartoœc ujemn¹: ";
-						//TODO wyrzucic terœc drukuj¹c¹ b³êdy do oddzielnej funkcji
+						//TODO wyrzucic terœc drukuj¹c¹ b³êdy do oddzielnej funkcji, zwracaj¹cej np string
 #ifdef __WIN32__
-						// https://msdn.microsoft.com/pl-pl/library/windows/desktop/ms740121(v=vs.85).aspx
-						// https://msdn.microsoft.com/pl-pl/library/windows/desktop/ms741580(v=vs.85).aspx
-						// http://en.cppreference.com/w/cpp/string/multibyte/wcstombs
-						// http://stackoverflow.com/questions/3400922/how-do-i-retrieve-an-error-string-from-wsagetlasterror
-						int errNumber = WSAGetLastError();
+// https://msdn.microsoft.com/pl-pl/library/windows/desktop/ms740121(v=vs.85).aspx
+// https://msdn.microsoft.com/pl-pl/library/windows/desktop/ms741580(v=vs.85).aspx
+// http://en.cppreference.com/w/cpp/string/multibyte/wcstombs
+// http://stackoverflow.com/questions/3400922/how-do-i-retrieve-an-error-string-from-wsagetlasterror
+						int errNumber = WSAGetLastError(); //Numer b³êdu socketa
 						wchar_t *errorTxt = NULL;
 						FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER
 								| FORMAT_MESSAGE_FROM_SYSTEM
 								| FORMAT_MESSAGE_IGNORE_INSERTS,
 						        NULL, errNumber,
 						        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-						        (LPWSTR)&errorTxt, 0, NULL);
+						        (LPWSTR)&errorTxt, 0, NULL); //Wyci¹gniêcie wiadomoœci do wchar_t
 						char errorNameBuffer[BUFFER_SIZE];
-						std::wcstombs(errorNameBuffer, errorTxt, BUFFER_SIZE);
+						std::wcstombs(errorNameBuffer, errorTxt, BUFFER_SIZE); //Konwersja do char*
 						recvErrorMsg += boost::lexical_cast<std::string>(errNumber)
-							+ " oznaczaj¹c¹: " + std::string(errorNameBuffer);
+								+ " oznaczaj¹c¹: " + std::string(errorNameBuffer)
+								+ "\nPrze³¹czam w tryb blokuj¹cy."; //Wiadomoœc do loga
+						setBlockingMode(realReceiverFd_, true);
 						logMsg << recvErrorMsg;
-						LocalFree(errorTxt);
+						LocalFree(errorTxt); //Konieczne ze wzglêdu na mo¿liwy wyciek pamiêci
 						log << logMsg;
+						//TODO W tym miejscu prze³¹czenie na socket nieblokuj¹cy
+						//TODO odeberanie porcji danych i prze³¹czenie z powrotem
+						//TODO do wersji nieblokuj¹cej
 #else
-
+						// http://man7.org/linux/man-pages/man2/recv.2.html
+						recvErrorMsg += boost::lexical_cast<std::string>(errno)	+ " oznaczaj¹c¹: "
+								+ std::string(strerror(errno));
+						log << logMsg;
+						//TODO Analogiczne uwagi jak w poprzednim ifdefie
 #endif
 						//close(realReceiverFd_);
 						//break;
