@@ -35,7 +35,7 @@ extern "C" {
 
 namespace thd{
 	//Konfiguracja po³¹czenia sieciowego
-	const int GAME_SEND_PORT = 3097; //TODO wyrzucic do sk³adowej static
+	const int GAME_SEND_PORT = 3098; //TODO wyrzucic do sk³adowej static
 	const char* SERVER_ADDRESS = "127.0.0.1";
 	const int MAX_ERROR_COUNTER = 15; //Arbitralnie dobrana wielkoœc
 	//const int BUFFER_SIZE = 1024; //Ju¿ zdefiniowano
@@ -113,7 +113,7 @@ namespace thd{
 			mtfifo::FIFO<mtfifo::FIFOInput> input
 						= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_TCPIP_SEN_EXIT);
 			mtfifo::FIFO<mtfifo::FIFOInput> input2
-						= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_SERIALIZED_INPUT);
+						= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_SERIALIZED_OUTPUT);
 			mtfifo::FIFO<mtfifo::FIFOOutput> log
 									= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
 

@@ -21,10 +21,10 @@ int main() {
 	boost::thread loggingThread(log);
 
 	FakeSender send;
-	//boost::thread fakeSender(send);
+	boost::thread fakeSender(send);
 
 	FakeSender send2;
-	//boost::thread fakeSender2(send2);
+	boost::thread fakeSender2(send2);
 
 	TCPIPThreadReceiver TCPIPStackReceiver;
 	boost::thread receiverThread(TCPIPStackReceiver);

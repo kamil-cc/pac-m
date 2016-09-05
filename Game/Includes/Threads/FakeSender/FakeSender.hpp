@@ -31,8 +31,10 @@ class FakeSender{
 public:
 	void operator()(){
 		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
+		//mtfifo::FIFO<mtfifo::FIFOOutput> output
+		//	= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
 		mtfifo::FIFO<mtfifo::FIFOOutput> output
-			= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
+					= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_SERIALIZED_OUTPUT);
 
 		boost::thread::id id = boost::this_thread::get_id();
 		thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
@@ -40,8 +42,10 @@ public:
 
 		for(int i = 0; i < 1000; ++i){
 			std::string str = "Wiadomosc nr: " + boost::lexical_cast<std::string>(i);
-			boost::any elem = mtfifo::LogElement(str, normal, boost::this_thread::get_id());
+			//boost::any elem = mtfifo::LogElement(str, normal, boost::this_thread::get_id());
+			boost::any elem = mtfifo::TCPIPSerialized(str);
 			output.put(elem);
+
 			boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
 		}
 	}
