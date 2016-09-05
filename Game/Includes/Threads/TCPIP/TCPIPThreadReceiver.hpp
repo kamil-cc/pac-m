@@ -12,6 +12,7 @@
 #ifdef __WIN32__
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
+	#include <winbase.h>
 	int close(int s) {return closesocket(s);}
 #else
 	#include <fcntl.h>
@@ -75,7 +76,7 @@ namespace thd{
 			closeFlag_ = false;
 			socketFlags_ = 0;
 
-			if(!setBlockingMode(receiverFd_, true))
+			if(!setBlockingMode(receiverFd_, false))
 				assert(!"Failed to set nonblocking mode");
 		}
 
@@ -149,7 +150,7 @@ namespace thd{
 		        	continue;
 		        }
 
-		        if(!setBlockingMode(realReceiverFd_, true))
+		        if(!setBlockingMode(realReceiverFd_, false))
 		        	assert(!"Failed to set nonblocking mode, 2nd");
 
 		        logMsg << normal;
@@ -171,14 +172,30 @@ namespace thd{
 		        	recvResult_ = recv(realReceiverFd_, buffer_, BUFFER_SIZE, socketFlags_);
 					if(recvResult_ <= -1){
 						logMsg << critical;
-						logMsg << "recv zwróci³o wartoœc ujemn¹: "
-								+ boost::lexical_cast<std::string>(recvResult_);
-						log << logMsg;
-						//TODO
+						std::string recvErrorMsg = "recv zwróci³o wartoœc ujemn¹: ";
+						//TODO wyrzucic terœc drukuj¹c¹ b³êdy do oddzielnej funkcji
 #ifdef __WIN32__
-						logMsg << critical;
-						logMsg << boost::lexical_cast<std::string>(WSAGetLastError());
+						// https://msdn.microsoft.com/pl-pl/library/windows/desktop/ms740121(v=vs.85).aspx
+						// https://msdn.microsoft.com/pl-pl/library/windows/desktop/ms741580(v=vs.85).aspx
+						// http://en.cppreference.com/w/cpp/string/multibyte/wcstombs
+						// http://stackoverflow.com/questions/3400922/how-do-i-retrieve-an-error-string-from-wsagetlasterror
+						int errNumber = WSAGetLastError();
+						wchar_t *errorTxt = NULL;
+						FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER
+								| FORMAT_MESSAGE_FROM_SYSTEM
+								| FORMAT_MESSAGE_IGNORE_INSERTS,
+						        NULL, errNumber,
+						        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+						        (LPWSTR)&errorTxt, 0, NULL);
+						char errorNameBuffer[BUFFER_SIZE];
+						std::wcstombs(errorNameBuffer, errorTxt, BUFFER_SIZE);
+						recvErrorMsg += boost::lexical_cast<std::string>(errNumber)
+							+ " oznaczaj¹c¹: " + std::string(errorNameBuffer);
+						logMsg << recvErrorMsg;
+						LocalFree(errorTxt);
 						log << logMsg;
+#else
+
 #endif
 						//close(realReceiverFd_);
 						//break;

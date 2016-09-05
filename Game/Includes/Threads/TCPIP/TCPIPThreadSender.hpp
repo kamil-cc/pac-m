@@ -65,7 +65,7 @@ namespace thd{
 		    if((socketFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		    	assert(!"socket failed");
 
-		    if(!setBlockingMode(socketFd_, true))
+		    if(!setBlockingMode(socketFd_, false))
 		    	assert("setBlockingMode failed, 2nd");
 
 		    std::memset(&server_, 0, sizeof(server_));
