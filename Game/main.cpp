@@ -72,20 +72,20 @@ int main() {
 	boost::thread loggingThread(log);
 
 	FakeSender send;
-	boost::thread fakeSender(send);
+	//boost::thread fakeSender(send);
 
 	FakeSender send2;
-	boost::thread fakeSender2(send2);
+	//boost::thread fakeSender2(send2);
 
 	TCPIPThreadReceiver TCPIPStackReceiver;
-	boost::thread TCPIPReceiver(TCPIPStackReceiver);
+	//boost::thread TCPIPReceiver(TCPIPStackReceiver);
 
 	TCPIPThreadSender TCPIPStackSender;
 	boost::thread TCPIPSender(TCPIPStackSender);
 
 	loggingThread.join();
-	fakeSender.join();
-	fakeSender2.join();
+	//fakeSender.join();
+	//fakeSender2.join();
 
 	return 0;
 }

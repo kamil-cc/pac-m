@@ -37,7 +37,7 @@
 
 namespace thd{
 	//Konfiguracja po³¹czenia sieciowego
-	const int GAME_LISTEN_PORT = 3098; //TODO wyrzucic do pliku cpp i zrobic ustawialne
+	const int GAME_LISTEN_PORT = 3097; //TODO wyrzucic do pliku cpp i zrobic ustawialne
 	const int BUFFER_SIZE = 1024;
 
 	/**
@@ -190,6 +190,7 @@ namespace thd{
 						        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 						        (LPWSTR)&errorTxt, 0, NULL); //Wyci¹gniêcie wiadomoœci do wchar_t
 						char errorNameBuffer[BUFFER_SIZE];
+						std::memset(errorNameBuffer, 0, sizeof(errorNameBuffer));
 						std::wcstombs(errorNameBuffer, errorTxt, BUFFER_SIZE); //Konwersja do char*
 						recvErrorMsg += boost::lexical_cast<std::string>(errNumber)
 								+ " oznaczaj¹c¹: " + std::string(errorNameBuffer)

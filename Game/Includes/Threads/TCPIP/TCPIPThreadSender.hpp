@@ -39,6 +39,7 @@ namespace thd{
 	const char* SERVER_ADDRESS = "127.0.0.1";
 	const int MAX_ERROR_COUNTER = 15; //Arbitralnie dobrana wielkoœc
 	//const int BUFFER_SIZE = 1024; //Ju¿ zdefiniowano
+	const bool BLOCKING_MODE = true;
 
 	/**
 	 * Klasa zawieraj¹ca obs³ugê wejœciowego stosu internetowego
@@ -65,7 +66,7 @@ namespace thd{
 		    if((socketFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		    	assert(!"socket failed");
 
-		    if(!setBlockingMode(socketFd_, false))
+		    if(!setBlockingMode(socketFd_, BLOCKING_MODE))
 		    	assert("setBlockingMode failed, 2nd");
 
 		    std::memset(&server_, 0, sizeof(server_));
@@ -171,9 +172,10 @@ namespace thd{
 						logMsg << "send zwróci³o wartoœc ujemn¹";
 						log << logMsg;
 						++errorCounter_;
+						boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
 						if(errorCounter_ < MAX_ERROR_COUNTER){
 							close(socketFd_);
-							assert(!"send failed");
+							assert(!"send failed"); //TODO To zakoñczy program w momencie roz³¹czenia
 						}
 					}else{
 						errorCounter_ = 0;
