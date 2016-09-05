@@ -78,10 +78,10 @@ int main() {
 	//boost::thread fakeSender2(send2);
 
 	TCPIPThreadReceiver TCPIPStackReceiver;
-	//boost::thread TCPIPReceiver(TCPIPStackReceiver);
+	boost::thread TCPIPReceiver(TCPIPStackReceiver);
 
-	TCPIPThreadSender TCPIPStackSender;
-	boost::thread TCPIPSender(TCPIPStackSender);
+	//TCPIPThreadSender TCPIPStackSender;
+	//boost::thread TCPIPSender(TCPIPStackSender);
 
 	loggingThread.join();
 	//fakeSender.join();

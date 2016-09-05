@@ -144,6 +144,7 @@ namespace thd{
 
 		    	errorCounter_ = 0;
 
+		    	//TODO tu prze³¹czyc w tryb blokuj¹cy
 				while(1){
 					processInput(input.get()); //Sprawdzenie czy wydano sygna³ zakoñczenia w¹tku
 					if(closeFlag_)
@@ -185,6 +186,7 @@ namespace thd{
 					}
 					boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
 				}//while
+				//TODO tu prze³¹czyc w tryb nieblokuj¹cy
 				boost::this_thread::sleep_for(TCPIP_SENDER_TIME * 2);
 		    }//while
 			close(socketFd_);

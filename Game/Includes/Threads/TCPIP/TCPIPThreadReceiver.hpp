@@ -27,6 +27,7 @@
 #include <string>
 
 //Boost
+#include <boost/algorithm/string.hpp>
 #include <boost/any.hpp>
 #include <boost/none.hpp>
 #include <boost/none_t.hpp>
@@ -84,16 +85,20 @@ namespace thd{
 		bool setBlockingMode(const int& socket, const bool blocking){ //TODO do pliku cpp
 #ifdef __WIN32__
 			unsigned long mode = blocking ? 0 : 1;
-			if(ioctlsocket(socket, FIONBIO, &mode) == 0)
-			   return true;
+			if(ioctlsocket(socket, FIONBIO, &mode) == 0){
+				blockingFlag_ = blocking;
+				return true;
+			}
 			return false;
 #else
 			int flags = fcntl(socket, F_GETFL, 0);
 			if (flags < 0)
 				return false;
 			flags = blocking ? (flags&~O_NONBLOCK) : (flags|O_NONBLOCK);
-			if(fcntl(socket, F_SETFL, flags) == 0))
+			if(fcntl(socket, F_SETFL, flags) == 0)){
+				blockingFlag_ = blocking;
 				return true;
+			}
 			return false;
 #endif
 		}
@@ -170,11 +175,19 @@ namespace thd{
 							+ " na porcie: " + boost::lexical_cast<std::string>(GAME_LISTEN_PORT);
 					log << logMsg;
 
-
 		        	recvResult_ = recv(realReceiverFd_, buffer_, BUFFER_SIZE, socketFlags_);
+
+		        	if(blockingFlag_){
+		        		setBlockingMode(realReceiverFd_, false);
+			        	logMsg << notification;
+						logMsg << "Próba ponownego prze³¹czenia w tryb nieblokuj¹cy";
+						log << logMsg;
+		        	}
+
 					if(recvResult_ <= -1){
 						logMsg << critical;
-						std::string recvErrorMsg = "recv zwróci³o wartoœc ujemn¹: ";
+						logMsg << "recv zwróci³o wartoœc ujemn¹: ";
+						log << logMsg;
 						//TODO wyrzucic terœc drukuj¹c¹ b³êdy do oddzielnej funkcji, zwracaj¹cej np string
 #ifdef __WIN32__
 // https://msdn.microsoft.com/pl-pl/library/windows/desktop/ms740121(v=vs.85).aspx
@@ -192,13 +205,7 @@ namespace thd{
 						char errorNameBuffer[BUFFER_SIZE];
 						std::memset(errorNameBuffer, 0, sizeof(errorNameBuffer));
 						std::wcstombs(errorNameBuffer, errorTxt, BUFFER_SIZE); //Konwersja do char*
-						recvErrorMsg += boost::lexical_cast<std::string>(errNumber)
-								+ " oznaczaj¹c¹: " + std::string(errorNameBuffer)
-								+ "\nPrze³¹czam w tryb blokuj¹cy."; //Wiadomoœc do loga
-						setBlockingMode(realReceiverFd_, true);
-						logMsg << recvErrorMsg;
 						LocalFree(errorTxt); //Konieczne ze wzglêdu na mo¿liwy wyciek pamiêci
-						log << logMsg;
 						//TODO W tym miejscu prze³¹czenie na socket nieblokuj¹cy
 						//TODO odeberanie porcji danych i prze³¹czenie z powrotem
 						//TODO do wersji nieblokuj¹cej
@@ -209,6 +216,12 @@ namespace thd{
 						log << logMsg;
 						//TODO Analogiczne uwagi jak w poprzednim ifdefie
 #endif
+						logMsg << critical;
+						logMsg << boost::lexical_cast<std::string>(errNumber)
+								+ " oznaczaj¹c¹: " + boost::trim(std::string())
+								+ "\nPrze³¹czam w tryb blokuj¹cy."; //Wiadomoœc do loga
+						log << logMsg;
+						setBlockingMode(realReceiverFd_, true);
 						//close(realReceiverFd_);
 						//break;
 					}else if(recvResult_ == 0){
@@ -241,6 +254,7 @@ namespace thd{
 
 		private:
 			bool closeFlag_;
+			bool blockingFlag_;
 			//Obs³uga socketów
 			struct sockaddr_in receiverIn_;
 			struct sockaddr_in client_;
