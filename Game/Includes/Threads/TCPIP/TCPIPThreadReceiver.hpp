@@ -75,7 +75,7 @@ namespace thd{
 			closeFlag_ = false;
 			socketFlags_ = 0;
 
-			if(!setBlockingMode(receiverFd_, false))
+			if(!setBlockingMode(receiverFd_, true))
 				assert(!"Failed to set nonblocking mode");
 		}
 
@@ -149,7 +149,7 @@ namespace thd{
 		        	continue;
 		        }
 
-		        if(!setBlockingMode(realReceiverFd_, false))
+		        if(!setBlockingMode(realReceiverFd_, true))
 		        	assert(!"Failed to set nonblocking mode, 2nd");
 
 		        logMsg << normal;
@@ -171,10 +171,17 @@ namespace thd{
 		        	recvResult_ = recv(realReceiverFd_, buffer_, BUFFER_SIZE, socketFlags_);
 					if(recvResult_ <= -1){
 						logMsg << critical;
-						logMsg << "recv zwróci³o wartoœc ujemn¹";
+						logMsg << "recv zwróci³o wartoœc ujemn¹: "
+								+ boost::lexical_cast<std::string>(recvResult_);
 						log << logMsg;
-						close(realReceiverFd_);
-						break;
+						//TODO
+#ifdef __WIN32__
+						logMsg << critical;
+						logMsg << boost::lexical_cast<std::string>(WSAGetLastError());
+						log << logMsg;
+#endif
+						//close(realReceiverFd_);
+						//break;
 					}else if(recvResult_ == 0){
 						logMsg << notification;
 						logMsg << "recv zwróci³o zakoñczenie po³¹czenia";

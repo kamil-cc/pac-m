@@ -35,8 +35,8 @@ extern "C" {
 
 namespace thd{
 	//Konfiguracja po³¹czenia sieciowego
-	const int GAME_SEND_PORT = 3098; //TODO wyrzucic do sk³adowej static
-	const char* SERVER_ADDRESS= "127.0.0.1";
+	const int GAME_SEND_PORT = 3099; //TODO wyrzucic do sk³adowej static
+	const char* SERVER_ADDRESS = "127.0.0.1";
 	const int MAX_ERROR_COUNTER = 15; //Arbitralnie dobrana wielkoœc
 	//const int BUFFER_SIZE = 1024; //Ju¿ zdefiniowano
 
@@ -52,7 +52,6 @@ namespace thd{
 			WSAStartup(versionWanted, &wsaData);
 #endif
 		    std::memset(&ipv4addr_, 0, sizeof(ipv4addr_));
-
 #ifdef __WIN32__
 		    inet_pton(AF_INET, SERVER_ADDRESS, &ipv4addr_);
 #else
@@ -66,7 +65,7 @@ namespace thd{
 		    if((socketFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		    	assert(!"socket failed");
 
-		    if(!setBlockingMode(socketFd_, false))
+		    if(!setBlockingMode(socketFd_, true))
 		    	assert("setBlockingMode failed, 2nd");
 
 		    std::memset(&server_, 0, sizeof(server_));
@@ -150,21 +149,21 @@ namespace thd{
 						break;
 
 					elem = input2.get();
-					try{
-						boost::any_cast<boost::none_t>(elem);
-						boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
-						continue;
-					}catch(boost::bad_any_cast &e){
-						try{
-							mtfifo::TCPIPSerialized msgToSend =
-									boost::any_cast<mtfifo::TCPIPSerialized>(elem);
+					//try{
+					//	boost::any_cast<boost::none_t>(elem);
+					//	boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
+					//	continue;
+					//}catch(boost::bad_any_cast &e){
+					//	try{
+							//mtfifo::TCPIPSerialized msgToSend =
+							//		boost::any_cast<mtfifo::TCPIPSerialized>(elem);
 							//const char *message = msgToSend.serialized.c_str(); //TODO
 							const char *message = "cosCOSCOSCOSCOSCOSCOSCOSCOSCOSCOSCOSCOS";
 							std::strncpy(buffer_, message, sizeof(message)/sizeof(*message));
-						}catch(boost::bad_any_cast &e){
-							assert(!"Unknown element type");
-						}
-					}
+					//	}catch(boost::bad_any_cast &e){
+					//		assert(!"Unknown element type");
+					//	}
+					//}
 					if((send(socketFd_, buffer_, strlen(buffer_), 0)) < 0){
 						logMsg << critical;
 						logMsg << "send zwróci³o wartoœc ujemn¹";
