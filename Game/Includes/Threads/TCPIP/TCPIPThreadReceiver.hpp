@@ -35,7 +35,7 @@
 
 namespace thd{
 	//Konfiguracja po³¹czenia sieciowego
-	const int GAME_LISTEN_PORT = 3097; //TODO wyrzucic do pliku cpp i zrobic ustawialne
+	const int GAME_LISTEN_PORT = 3098; //TODO wyrzucic do pliku cpp i zrobic ustawialne
 	const int BUFFER_SIZE = 1024;
 
 	/**
@@ -51,7 +51,7 @@ namespace thd{
 #endif
 			std::memset(&receiverIn_, 0, sizeof(receiverIn_));
 			std::memset(&client_, 0, sizeof(client_));
-			std::memset(buffer_, 0, sizeof(buffer_)/sizeof(*buffer_));
+			std::memset(buffer_, 0, sizeof(buffer_));
 
 			if((receiverFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 				assert(!"socked failed");

@@ -35,7 +35,7 @@ extern "C" {
 
 namespace thd{
 	//Konfiguracja po³¹czenia sieciowego
-	const int GAME_SEND_PORT = 3099; //TODO wyrzucic do sk³adowej static
+	const int GAME_SEND_PORT = 3097; //TODO wyrzucic do sk³adowej static
 	const char* SERVER_ADDRESS = "127.0.0.1";
 	const int MAX_ERROR_COUNTER = 15; //Arbitralnie dobrana wielkoœc
 	//const int BUFFER_SIZE = 1024; //Ju¿ zdefiniowano
@@ -157,9 +157,11 @@ namespace thd{
 					//	try{
 							//mtfifo::TCPIPSerialized msgToSend =
 							//		boost::any_cast<mtfifo::TCPIPSerialized>(elem);
-							//const char *message = msgToSend.serialized.c_str(); //TODO
-							const char *message = "cosCOSCOSCOSCOSCOSCOSCOSCOSCOSCOSCOSCOS";
-							std::strncpy(buffer_, message, sizeof(message)/sizeof(*message));
+							//const char *message = msgToSend.serialized.c_str(); //Gwarancja, ¿e jest null terminated
+							const char *message = "1234567890abcdefghijklmnoprstuvwxyqvz\0";
+							if((std::strlen(message) + 1) > BUFFER_SIZE)
+								assert(!"serialized message is too big");
+							std::strcpy(buffer_, message);
 					//	}catch(boost::bad_any_cast &e){
 					//		assert(!"Unknown element type");
 					//	}
