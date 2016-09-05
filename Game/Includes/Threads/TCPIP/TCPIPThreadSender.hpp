@@ -45,7 +45,7 @@ namespace thd{
 	 */
 	class TCPIPThreadSender{
 	public:
-		void receiverInit(){//TODO do pliku cpp
+		void senderInit(){//TODO do pliku cpp
 #ifdef __WIN32__
 			WORD versionWanted = MAKEWORD(1, 1);
 			WSADATA wsaData;
@@ -84,7 +84,7 @@ namespace thd{
 		}
 
 		void operator()(){ //TODO Wyrzucic treœc do pliku .cpp
-			receiverInit();
+			senderInit();
 			mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
 			mtfifo::FIFO<mtfifo::FIFOInput> input
 						= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_TCPIP_SEN_EXIT);
@@ -132,7 +132,7 @@ namespace thd{
 		    	assert("setBlockingMode failed, 2nd");
 
 		    logMsg << normal;
-		    logMsg << "setting nonblocking mode, 2nd";
+		    logMsg << "ustawiono tryb nieblokuj¹cy 2";
 		    log << logMsg;
 
 		    std::memset(&server, 0, sizeof(server));
@@ -149,19 +149,19 @@ namespace thd{
 
 		    	if(connect(socketFd, (struct sockaddr *)&server, sizeof(struct sockaddr)) < 0){
 		    		logMsg << notification;
-		    		logMsg << "connect failed";
+		    		logMsg << "connect zwróci³o wartoœc ujemn¹";
 		    		log << logMsg;
 		    		boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
 		    		continue;
 		    	}
 
-		    	errorCounter = 0;
+		    	errorCounter_ = 0;
 
 				while(1){
 					processInput(input.get()); //Sprawdzenie czy wydano sygna³ zakoñczenia w¹tku
 					if(closeFlag_)
 						break;
-					//buffer = "some message"; //TODO usun¹c
+
 					elem = input2.get();
 					try{
 						boost::any_cast<boost::none_t>(elem);
@@ -171,7 +171,7 @@ namespace thd{
 						try{
 							mtfifo::TCPIPSerialized msgToSend =
 									boost::any_cast<mtfifo::TCPIPSerialized>(elem);
-							//const char *message = msgToSend.serialized.c_str();
+							//const char *message = msgToSend.serialized.c_str(); //TODO
 							const char *message = "cosCOSCOSCOSCOSCOSCOSCOSCOSCOSCOSCOSCOS";
 							std::strncpy(buffer, message, sizeof(message)/sizeof(*message));
 						}catch(boost::bad_any_cast &e){
@@ -180,17 +180,17 @@ namespace thd{
 					}
 					if((send(socketFd, buffer, strlen(buffer), 0)) < 0){
 						logMsg << critical;
-						logMsg << "send failed";
+						logMsg << "send zwróci³o wartoœc ujemn¹";
 						log << logMsg;
-						++errorCounter;
-						if(errorCounter < MAX_ERROR_COUNTER){
+						++errorCounter_;
+						if(errorCounter_ < MAX_ERROR_COUNTER){
 							close(socketFd);
 							assert(!"send failed");
 						}
 					}else{
-						errorCounter = 0;
+						errorCounter_ = 0;
 						logMsg << normal;
-						logMsg << "send ok: " + std::string();
+						logMsg << "send powiod³o siê, wys³ano: " + std::string(buffer);
 						log << logMsg;
 					}
 					boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
@@ -205,17 +205,7 @@ namespace thd{
 
 		private:
 			bool closeFlag_;
-			int errorCounter;
-			/*//Obs³uga socketów
-			struct sockaddr_in receiverIn_;
-			struct sockaddr_in client_;
-			socklen_t sizeSockaddrIn_;
-			int receiverFd_;
-			int realReceiverFd_;
-			int socketFlags_;
-			int recvResult_;
-			char buffer_[BUFFER_SIZE];
-			char optval_;*/
+			int errorCounter_;
 	};
 }
 
