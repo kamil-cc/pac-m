@@ -11,6 +11,7 @@
 #undef KEY_EVENT
 
 //Boost
+#include <boost/any.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <boost/variant.hpp>
@@ -36,7 +37,7 @@ const int INFO_COLS = 30;
 const int TOTAL_COLS = GAME_COLS + INFO_COLS;
 typedef boost::variant<char, chtype> arenaVariant_t;
 
-//Straszne haki, takie jak boost::array
+//Na wzór boost::array
 typedef struct arena_s{std::vector<std::vector<arenaVariant_t> > value;} arena_t;
 
 class GameEngine : public boost::static_visitor<>{ // : boost::static_visitor<void>
@@ -189,28 +190,65 @@ public:
 	//Punkt wejœcia w¹tku
 	void operator()(){
 		initEngine();
-		/*mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
-		//mtfifo::FIFO<mtfifo::FIFOOutput> output
-		//	= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
+
+		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
+		mtfifo::FIFO<mtfifo::FIFOOutput> log
+			= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
 		mtfifo::FIFO<mtfifo::FIFOOutput> output
 					= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_SERIALIZED_OUTPUT);
+		mtfifo::FIFO<mtfifo::FIFOInput> input
+					= fifoDistributor.getFIFO<mtfifo::FIFOInput>(mtfifo::FIFO_SERIALIZED_INPUT);
 
 		boost::thread::id id = boost::this_thread::get_id();
 		thd::ThreadRegistration& threadRegistration = thd::ThreadRegistration::getInstance();
-		threadRegistration.registerThread(id, thd::FAKE);*/
+		threadRegistration.registerThread(id, thd::ENGINE);
+
+		gameStarted_ = false;
+		singlePlayer_ = false;
+		slave_ = false;
 
 		while(1){
-			/*std::string str = "Wiadomosc nr: " + boost::lexical_cast<std::string>(i);
-			//boost::any elem = mtfifo::LogElement(str, normal, boost::this_thread::get_id());
-			boost::any elem = mtfifo::TCPIPSerialized(str);
-			output.put(elem);*/
+			//TODO do loga: game is ready
+
+			//Sekcja czytania z klawiatury
 			readedChar_ = getch();
 			if(readedChar_ != ERR)
 				printPressed(readedChar_);
 			if(readedChar_ == static_cast<int>('q')){
+				//TODO do loga program exited normally
 				callQuit();
 				break;
 			}
+
+			//Gra w trybie oczekiwania
+			if(!gameStarted_){
+				if(readedChar_ == static_cast<int>('s')){
+					gameStarted_ = true;
+					singlePlayer_ = true;
+				}else if(readedChar_ == static_cast<int>('m')){
+					gameStarted_ = true;
+					slave_ = true;
+				}else{
+					boost::any elem = input.get();
+		        	try{
+						boost::any_cast<boost::none_t>(elem);
+					}catch(boost::bad_any_cast &e){
+						try{
+							mtfifo::TCPIPSerialized serializedMsg =
+									boost::any_cast<mtfifo::TCPIPSerialized>(elem);
+							if(serializedMsg.serialized.compare("START")){
+								gameStarted_ = true;
+							}
+						}catch(boost::bad_any_cast &e){
+							assert(!"Unknown element type");
+						}
+					}
+				}
+				boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
+				continue;
+			}
+
+			//Gra wystartowana
 			boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
 		}
 		endwin();
@@ -260,6 +298,9 @@ private:
 	arena_t arena_ = startingArena_;
 	int diamondsLeft_;
 	int readedChar_;
+	bool gameStarted_;
+	bool singlePlayer_;
+	bool slave_;
 };
 
 }
