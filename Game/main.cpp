@@ -21,11 +21,11 @@ int main() {
 	LoggingThread log;
 	boost::thread loggingThread(log);
 
-	FakeSender send;
-	boost::thread fakeSender(send);
+	//FakeSender send;
+	//boost::thread fakeSender(send);
 
-	FakeSender send2;
-	boost::thread fakeSender2(send2);
+	//FakeSender send2;
+	//boost::thread fakeSender2(send2);
 
 	TCPIPThreadReceiver TCPIPStackReceiver;
 	boost::thread receiverThread(TCPIPStackReceiver);
@@ -38,9 +38,11 @@ int main() {
 
 	//fakeSender.join();
 	//fakeSender2.join();
+
 	loggingThread.join();
 	receiverThread.join();
 	senderThread.join();
+	gameEngineThread.join();
 
 	return 0;
 }

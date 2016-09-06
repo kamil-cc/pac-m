@@ -47,11 +47,15 @@ public:
 		mvprintw(++row, GAME_COLS + 1, "         Hello!");
 		mvprintw(++row, GAME_COLS + 1, "For Single Player press ' '");
 		swapColors(1, 2);
-		mvprintw(row, GAME_COLS + 1 + 25, "S");
+		mvprintw(row, GAME_COLS + 1 + 25, "s");
 		swapColors(2, 1);
 		mvprintw(++row, GAME_COLS + 1, "For Multi Player press ' '");
 		swapColors(1, 2);
-		mvprintw(row, GAME_COLS + 1 + 24, "M");
+		mvprintw(row, GAME_COLS + 1 + 24, "m");
+		swapColors(2, 1);
+		mvprintw(++row, GAME_COLS + 1, "To exit game press ' '");
+		swapColors(1, 2);
+		mvprintw(row, GAME_COLS + 1 + 20, "q");
 		swapColors(2, 1);
 		mvprintw(++row, GAME_COLS + 1, "");
 		mvprintw(++row, GAME_COLS + 1, "        Controls:");
@@ -81,6 +85,8 @@ public:
 	void initEngine(){
 		initscr();
 		cbreak();
+		noecho();
+		timeout(GAME_REFRESH_TIME.count()); //B³yskawicznie zwracaj getchar
 		int maxRows = 0;
 		int maxCols = 0;
 		if(has_colors() == FALSE){
@@ -112,9 +118,8 @@ public:
 			assert(!"resize_term failed");
 		}
 		printHelloInfo();
+		diamondsLeft_ = 0;
 		printArena();
-		getch();
-		endwin();
 	}
 
 	void swapColors(int from, int to){
@@ -128,6 +133,7 @@ public:
 		char ch = std::tolower(c);
 		switch(ch){
 		case'd':
+			++diamondsLeft_;
 			mvaddch(row, col, ACS_BULLET);
 			break;
 		case'o':
@@ -153,11 +159,31 @@ public:
 	void operator()(chtype c, int row, int col){
 		if(((((c == ULC || c == LLC)) || (c == URC || c == LRC))
 			|| ((c == HLI || c == VLI) || (c == TTE || c == BTE)))
-				|| (c == LTE || c == RTE)){
+			|| (c == LTE || c == RTE)){
 				swapColors(1, 3);
 				mvaddch(row, col, c);
 				swapColors(3, 1);
 		}
+	}
+
+	void printPressed(int key){
+		move(GAME_ROWS - 1, GAME_COLS + 1);
+		clrtoeol();
+		mvprintw(GAME_ROWS - 1, GAME_COLS + 1, "%d", key);
+	}
+
+	void callQuit(){
+		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
+		mtfifo::FIFO<mtfifo::FIFOOutput> output1
+					= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_TCPIP_REC_EXIT);
+		mtfifo::FIFO<mtfifo::FIFOOutput> output2
+					= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_TCPIP_SEN_EXIT);
+		mtfifo::FIFO<mtfifo::FIFOOutput> output3
+					= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
+		boost::any exit = mtfifo::ExitThread();
+		output1.put(exit);
+		output2.put(exit);
+		output3.put(exit);
 	}
 
 	//Punkt wejœcia w¹tku
@@ -178,9 +204,16 @@ public:
 			//boost::any elem = mtfifo::LogElement(str, normal, boost::this_thread::get_id());
 			boost::any elem = mtfifo::TCPIPSerialized(str);
 			output.put(elem);*/
-
-			boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
+			readedChar_ = getch();
+			if(readedChar_ != ERR)
+				printPressed(readedChar_);
+			if(readedChar_ == static_cast<int>('q')){
+				callQuit();
+				break;
+			}
+			boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
 		}
+		endwin();
 	}
 private:
 	bool hasColorsFlag_;
@@ -225,6 +258,8 @@ private:
 		} //vector
 	}; //struct
 	arena_t arena_ = startingArena_;
+	int diamondsLeft_;
+	int readedChar_;
 };
 
 }
