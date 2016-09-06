@@ -35,6 +35,12 @@ const int GAME_ROWS = 25; //TODO do sk³adowych statycznych klasy GameEngine
 const int GAME_COLS = 50;
 const int INFO_COLS = 30;
 const int TOTAL_COLS = GAME_COLS + INFO_COLS;
+
+typedef enum move_e{UP, DOWN, LEFT, RIGHT, NONE} move_t;
+typedef enum creature_e{GHOST1, GHOST2, GHOST4, PACMAN, LAST} creature_t;
+typedef boost::variant<creature_t> creatureVariant_t;
+
+//Arena sk³ada siê z dwóch typów
 typedef boost::variant<char, chtype> arenaVariant_t;
 
 //Na wzór boost::array
@@ -130,7 +136,7 @@ public:
 		}
 	}
 
-	void operator()(char c, int row, int col){
+	void operator()(char c, int row, int col){ //Tworzy pola "specjalne"
 		char ch = std::tolower(c);
 		switch(ch){
 		case'd':
@@ -141,6 +147,8 @@ public:
 			swapColors(1, 4);
 			mvaddch(row, col, 'O');
 			swapColors(4, 1);
+			pacManRow_ = row;
+			pacManCol_ = col;
 			break;
 		case '=':
 			swapColors(1, 7);
@@ -151,19 +159,53 @@ public:
 			swapColors(1, 6);
 			mvaddch(row, col, 'M');
 			swapColors(6, 1);
+			ghost1Row_ = row;
+			ghost1Col_ = col;
+			break;
+		case 'p':
+			swapColors(1, 6);
+			mvaddch(row, col, 'M');
+			swapColors(6, 1);
+			ghost2Row_ = row;
+			ghost2Col_ = col;
+			break;
+		case 's':
+			swapColors(1, 6);
+			mvaddch(row, col, 'M');
+			swapColors(6, 1);
+			ghost3Row_ = row;
+			ghost3Col_ = col;
+			break;
+		case 't':
+			swapColors(1, 6);
+			mvaddch(row, col, 'M');
+			swapColors(6, 1);
+			ghost4Row_ = row;
+			ghost4Col_ = col;
 			break;
 		default:
 			break;
 		}
 	}
 
-	void operator()(chtype c, int row, int col){
+	void operator()(chtype c, int row, int col){ //Tworzy pola "zwyk³e"
 		if(((((c == ULC || c == LLC)) || (c == URC || c == LRC))
 			|| ((c == HLI || c == VLI) || (c == TTE || c == BTE)))
 			|| (c == LTE || c == RTE)){
 				swapColors(1, 3);
 				mvaddch(row, col, c);
 				swapColors(3, 1);
+		}
+	}
+
+	void operator()(creature_t creature, move_t move){ //Operator przesuwaj¹cy potworki
+		switch(creature){
+		case PACMAN:
+			if(move == NONE)
+				break;
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -182,9 +224,29 @@ public:
 		mtfifo::FIFO<mtfifo::FIFOOutput> output3
 					= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
 		boost::any exit = mtfifo::ExitThread();
-		output1.put(exit);
-		output2.put(exit);
-		output3.put(exit);
+		output1.put(exit); //Zamyka w¹tek odbieraj¹cy z sieci
+		output2.put(exit); //Zamyka w¹tek pisz¹cy do sieci
+		output3.put(exit); //Zamyka w¹tek pisz¹cy do loga
+	}
+
+	void printGoodbyeScreen(bool win){
+		int row = 0;
+		clear();
+		timeout(-1);
+		if(win){
+			swapColors(1, 2);
+			mvprintw(++row, 0, "Winner!");
+			swapColors(2, 1);
+		}else{
+			swapColors(1, 7);
+			mvprintw(++row, 0, "Game over!");
+			swapColors(7, 1);
+		}
+		mvprintw(++row, 0, "Thank You For Playing Pac-M!");
+		mvprintw(++row, 0, "Author: Kamil Burzynski");
+		mvprintw(++row, 0, "All Rights Reserved");
+		mvprintw(++row, 0, "Press any key to quit.");
+		getch();
 	}
 
 	//Punkt wejœcia w¹tku
@@ -206,6 +268,8 @@ public:
 		gameStarted_ = false;
 		singlePlayer_ = false;
 		slave_ = false;
+		win_ = false;
+		lose_ = false;
 
 		while(1){
 			//TODO do loga: game is ready
@@ -248,7 +312,43 @@ public:
 				continue;
 			}
 
+			if(readedChar_ == 72){
+				nextMove_ = UP;
+			}else if(readedChar_ == 80){
+				nextMove_ = DOWN;
+			}else if(readedChar_ == 75){
+				nextMove_ = LEFT;
+			}else if(readedChar_ == 77){
+				nextMove_ = RIGHT;
+			}else{
+				nextMove_ = NONE;
+			}
+
 			//Gra wystartowana
+			if(singlePlayer_){
+				for(int i = GHOST1; i != LAST; ++i){
+					move_t move;
+					creature_t creature = static_cast<creature_t>(i);
+					creatureVariant_t creatureToVisit = creature;
+					if(creature == PACMAN){
+						move = nextMove_;
+					}else{
+						move = NONE;
+					}
+					auto creatureVisitor = boost::bind(*this, _1, move);
+					boost::apply_visitor(creatureVisitor, creatureToVisit);
+				}
+			}else{
+				//TODO instrukcje do gry sieciowej
+				//Lub pobranie z kolejki ruchu duszka analogicznie jw + pobranie ruchu duszka
+			}
+
+			//Gra zakoñczona
+			if(win_ || lose_){
+				printGoodbyeScreen(win_);
+				callQuit();
+				break;
+			}
 			boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
 		}
 		endwin();
@@ -280,7 +380,7 @@ private:
 			{VLI, 'd', LLC, HLI, HLI, HLI, HLI, HLI, HLI, HLI, LRC, 'd', VLI, ' ', VLI, 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', VLI, ' ', VLI, 'd', LLC, HLI, HLI, HLI, HLI, HLI, HLI, HLI, LRC, 'd', VLI},
 			{VLI, 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', VLI, ' ', VLI, 'd', ULC, HLI, HLI, HLI, HLI, '=', '=', '=', '=', '=', '=', '=', '=', HLI, HLI, HLI, HLI, URC, 'd', VLI, ' ', VLI, 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', VLI},
 			{LLC, HLI, HLI, HLI, HLI, 'd', HLI, HLI, HLI, HLI, HLI, 'd', LLC, HLI, LRC, 'd', VLI, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', VLI, 'd', LLC, HLI, LRC, 'd', HLI, HLI, HLI, HLI, HLI, 'd', HLI, HLI, HLI, HLI, LRC},
-			{' ', ' ', ' ', ' ', ' ', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', VLI, ' ', ' ', ' ', ' ', 'M', ' ', 'M', ' ', ' ', 'M', ' ', 'M', ' ', ' ', ' ', ' ', VLI, 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', ' ', ' ', ' ', ' ', ' '},
+			{' ', ' ', ' ', ' ', ' ', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', VLI, ' ', ' ', ' ', ' ', 'M', ' ', 'P', ' ', ' ', 'S', ' ', 'T', ' ', ' ', ' ', ' ', VLI, 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', ' ', ' ', ' ', ' ', ' '},
 			{ULC, HLI, HLI, HLI, HLI, 'd', HLI, HLI, HLI, HLI, HLI, 'd', ULC, HLI, URC, 'd', VLI, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', VLI, 'd', ULC, HLI, URC, 'd', HLI, HLI, HLI, HLI, HLI, 'd', HLI, HLI, HLI, HLI, URC},
 			{VLI, 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', VLI, ' ', VLI, 'd', LLC, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, LRC, 'd', VLI, ' ', VLI, 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', VLI},
 			{VLI, 'd', ULC, HLI, HLI, HLI, HLI, HLI, HLI, HLI, URC, 'd', VLI, ' ', VLI, 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'O', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', VLI, ' ', VLI, 'd', ULC, HLI, HLI, HLI, HLI, HLI, HLI, HLI, URC, 'd', VLI},
@@ -301,6 +401,22 @@ private:
 	bool gameStarted_;
 	bool singlePlayer_;
 	bool slave_;
+	bool win_;
+	bool lose_;
+	//Po³o¿enie PacMana
+	int pacManRow_;
+	int pacManCol_;
+	//Po³o¿enie Duchów
+	int ghost1Row_;
+	int ghost1Col_;
+	int ghost2Row_;
+	int ghost2Col_;
+	int ghost3Row_;
+	int ghost3Col_;
+	int ghost4Row_;
+	int ghost4Col_;
+	//Next move
+	move_t nextMove_;
 };
 
 }
