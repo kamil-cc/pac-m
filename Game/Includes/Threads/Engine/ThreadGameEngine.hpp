@@ -33,7 +33,7 @@ const int GAME_ROWS = 25; //TODO do sk³adowych statycznych klasy GameEngine
 const int GAME_COLS = 50;
 const int INFO_COLS = 30;
 const int TOTAL_COLS = GAME_COLS + INFO_COLS;
-typedef boost::variant<unsigned char, chtype> arenaVariant_t;
+typedef boost::variant<char, chtype> arenaVariant_t;
 //Straszne haki, takie jak boost::array
 typedef struct arena_s{std::vector<std::vector<arenaVariant_t> > value;} arena_t;
 //Trzyliterowe aliasy dla przejrzystoœci macierzy na dole pliku
@@ -110,10 +110,9 @@ public:
 
 	void printArena(){
 		//auto bound_visitor = std::bind(*this, std::placeholders::_1, "Hello World!");
-		//for(int row = 0; row < static_cast<int>(arena_.value.size()); ++row)
-		//	for(int col = 0; col < static_cast<int>(arena_.value[0].size()); ++col)
-		//		;//boost::apply_visitor(*this);
-				//boost::apply_visitor(*this, arena_.value[row][col]);
+		for(int row = 0; row < static_cast<int>(arena_.value.size()); ++row)
+			for(int col = 0; col < static_cast<int>(arena_.value[0].size()); ++col)
+				boost::apply_visitor(*this, arena_.value[row][col]);
 				//boost::apply_visitor(*this, row, col);
 	}
 
@@ -154,7 +153,7 @@ public:
 		endwin();
 	}
 
-	void operator()(unsigned char c){
+	void operator()(char c){
 		//mvprintw();
 	}
 
