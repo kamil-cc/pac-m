@@ -11,6 +11,7 @@
 #undef KEY_EVENT
 
 //Boost
+#include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <boost/variant.hpp>
 
@@ -109,11 +110,13 @@ public:
 	}
 
 	void printArena(){
-		//auto bound_visitor = std::bind(*this, std::placeholders::_1, "Hello World!");
-		for(int row = 0; row < static_cast<int>(arena_.value.size()); ++row)
-			for(int col = 0; col < static_cast<int>(arena_.value[0].size()); ++col)
-				boost::apply_visitor(*this, arena_.value[row][col]);
-				//boost::apply_visitor(*this, row, col);
+		for(int row = 0; row < static_cast<int>(arena_.value.size()); ++row){
+			for(int col = 0; col < static_cast<int>(arena_.value[0].size()); ++col){
+				//Jedyne u¿ycie auto w ca³ym programie
+				auto bound_visitor = boost::bind(GameEngine(), _1, row, col);
+				boost::apply_visitor(bound_visitor, arena_.value[row][col]);
+			}
+		}
 	}
 
 	void initEngine(){
@@ -153,11 +156,12 @@ public:
 		endwin();
 	}
 
-	void operator()(char c){
+	//TODO wydzielic takie wizytory do oddzielnych obiektów
+	void operator()(char c, int row, int col){
 		//mvprintw();
 	}
 
-	void operator()(chtype c){
+	void operator()(chtype c, int row, int col){
 		//mvprintw();
 	}
 
