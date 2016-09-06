@@ -35,8 +35,10 @@ const int GAME_COLS = 50;
 const int INFO_COLS = 30;
 const int TOTAL_COLS = GAME_COLS + INFO_COLS;
 typedef boost::variant<char, chtype> arenaVariant_t;
+
 //Straszne haki, takie jak boost::array
 typedef struct arena_s{std::vector<std::vector<arenaVariant_t> > value;} arena_t;
+
 //Trzyliterowe aliasy dla przejrzystoœci macierzy na dole pliku
 #define LLC ACS_LLCORNER
 #define ULC ACS_ULCORNER
@@ -78,8 +80,7 @@ public:
 		mvaddch(GAME_ROWS - 1, 0, ACS_LLCORNER);
 		mvaddch(0, GAME_COLS - 1, ACS_URCORNER);
 		mvaddch(GAME_ROWS - 1, GAME_COLS - 1, ACS_LRCORNER);
-		attroff(COLOR_PAIR(3));
-		attron(COLOR_PAIR(1));
+		swapColors(3, 1);
 		refresh();
 	}
 
@@ -88,17 +89,13 @@ public:
 		int row = 0;
 		mvprintw(++row, GAME_COLS + 1, "         Hello!");
 		mvprintw(++row, GAME_COLS + 1, "For Single Player press ' '");
-		attroff(COLOR_PAIR(3));
-		attron(COLOR_PAIR(2));
+		swapColors(3, 2);
 		mvprintw(row, GAME_COLS + 1 + 25, "S");
-		attroff(COLOR_PAIR(2));
-		attron(COLOR_PAIR(1));
+		swapColors(2, 1);
 		mvprintw(++row, GAME_COLS + 1, "For Multi Player press ' '");
-		attroff(COLOR_PAIR(1));
-		attron(COLOR_PAIR(2));
+		swapColors(1, 2);
 		mvprintw(row, GAME_COLS + 1 + 24, "M");
-		attroff(COLOR_PAIR(2));
-		attron(COLOR_PAIR(1));
+		swapColors(2, 1);
 		mvprintw(++row, GAME_COLS + 1, "");
 		mvprintw(++row, GAME_COLS + 1, "        Controls:");
 		mvaddch(++row, GAME_COLS + 1 + ANCHOR, ACS_UARROW);
@@ -107,19 +104,17 @@ public:
 		mvaddch(row, GAME_COLS + 1 + ANCHOR + 1, ACS_RARROW);
 		mvprintw(++row, GAME_COLS + 1, "");
 		mvprintw(++row, GAME_COLS + 1, "        Points:");
-		attroff(COLOR_PAIR(1));
-		attron(COLOR_PAIR(3));
+		swapColors(1, 3);
 		mvprintw(row, GAME_COLS + 1 + 16, "0");
-		attroff(COLOR_PAIR(3));
-		attron(COLOR_PAIR(1));
+		swapColors(3, 1);
 		refresh();
 	}
 
 	void printArena(){
-		for(int row = 0; row < static_cast<int>(arena_.value.size()); ++row){
-			for(int col = 0; col < static_cast<int>(arena_.value[0].size()); ++col){
-				auto bound_visitor = boost::bind(GameEngine(), _1, row, col);
-				boost::apply_visitor(bound_visitor, arena_.value[row][col]);
+		for(int row = 0; row < static_cast<int>(startingArena_.value.size()); ++row){
+			for(int col = 0; col < static_cast<int>(startingArena_.value[0].size()); ++col){
+				auto bindedVisitor = boost::bind(GameEngine(), _1, row, col);
+				boost::apply_visitor(bindedVisitor, startingArena_.value[row][col]);
 			}
 		}
 	}
@@ -137,6 +132,7 @@ public:
 			init_pair(1, COLOR_WHITE, COLOR_BLACK);
 			init_pair(2, COLOR_GREEN, COLOR_BLACK);
 			init_pair(3, COLOR_BLUE, COLOR_BLACK);
+			init_pair(4, COLOR_YELLOW, COLOR_BLACK);
 			attron(COLOR_PAIR(3));
 		}
 		curs_set(0);
@@ -161,9 +157,23 @@ public:
 		endwin();
 	}
 
-	//TODO wydzielic takie wizytory do oddzielnych obiektów
+	void swapColors(int from, int to){
+		if(hasColorsFlag_){
+			attroff(COLOR_PAIR(from));
+			attron(COLOR_PAIR(to));
+		}
+	}
+
 	void operator()(char c, int row, int col){
-		//mvprintw();
+		switch(c){
+		case'd':
+			swapColors(1, 4);
+			mvaddch(row, col, ACS_DIAMOND);
+			swapColors(4, 1);
+			break;
+		default:
+			break;
+		}
 	}
 
 	void operator()(chtype c, int row, int col){
@@ -194,7 +204,7 @@ public:
 	}
 private:
 	bool hasColorsFlag_;
-	arena_t arena_ = { //struct
+	const arena_t startingArena_ = { //struct
 		{ //vector
 			{'d', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd'},
 			{'d', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd'},
@@ -221,6 +231,7 @@ private:
 			{'d', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd'}
 		} //vector
 	}; //struct
+	arena_t arena_ = startingArena_;
 };
 
 }
