@@ -33,9 +33,12 @@ const int GAME_ROWS = 25; //TODO do sk³adowych statycznych klasy GameEngine
 const int GAME_COLS = 50;
 const int INFO_COLS = 30;
 const int TOTAL_COLS = GAME_COLS + INFO_COLS;
-//typedef boost::variant<char, > expr;
+typedef boost::variant<unsigned char, chtype> arenaVariant_t;
+//Straszne haki, takie jak boost::array
+typedef struct arena_s{std::vector<std::vector<arenaVariant_t> > value;} arena_t;
+//Trzyliterowe aliasy dla przejrzystoœci macierzy na dole pliku
 
-class GameEngine : public boost::static_visitor<>{
+class GameEngine : public boost::static_visitor<>{ // : boost::static_visitor<void>
 public:
 	void printFrame(){
 		for(int col = 1; col < GAME_COLS - 1; ++col){ //Linia górna
@@ -106,9 +109,12 @@ public:
 	}
 
 	void printArena(){
-		for(int row = 0; row < static_cast<int>(sizeof(arena_)); ++row)
-			for(int col = 0; col < static_cast<int>(sizeof(*arena_)); ++col)
-				;//boost::apply_visitor(*this, row, col);
+		//auto bound_visitor = std::bind(*this, std::placeholders::_1, "Hello World!");
+		//for(int row = 0; row < static_cast<int>(arena_.value.size()); ++row)
+		//	for(int col = 0; col < static_cast<int>(arena_.value[0].size()); ++col)
+		//		;//boost::apply_visitor(*this);
+				//boost::apply_visitor(*this, arena_.value[row][col]);
+				//boost::apply_visitor(*this, row, col);
 	}
 
 	void initEngine(){
@@ -148,7 +154,11 @@ public:
 		endwin();
 	}
 
-	void operator()(int row, int col){
+	void operator()(unsigned char c){
+		//mvprintw();
+	}
+
+	void operator()(chtype c){
 		//mvprintw();
 	}
 
@@ -176,7 +186,8 @@ public:
 	}
 private:
 	bool hasColorsFlag_;
-	char arena_[GAME_ROWS - 2][GAME_COLS - 2] = {
+	arena_t arena_ = { //struct
+		{ //vector
 			{'d', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd'},
 			{'d', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd'},
 			{'d', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd'},
@@ -200,7 +211,8 @@ private:
 			{'d', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd'},
 			{'d', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd'},
 			{'d', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd'}
-		};
+		} //vector
+	}; //struct
 };
 
 }
