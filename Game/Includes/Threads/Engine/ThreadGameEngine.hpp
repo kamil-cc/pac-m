@@ -113,10 +113,12 @@ public:
 	void printArena(){
 		for(int row = 0; row < static_cast<int>(startingArena_.value.size()); ++row){
 			for(int col = 0; col < static_cast<int>(startingArena_.value[0].size()); ++col){
-				auto bindedVisitor = boost::bind(GameEngine(), _1, row, col);
+				auto bindedVisitor = boost::bind(GameEngine(), _1, row + 1, col + 1);
 				boost::apply_visitor(bindedVisitor, startingArena_.value[row][col]);
 			}
+			refresh();
 		}
+		refresh();
 	}
 
 	void initEngine(){
@@ -153,6 +155,7 @@ public:
 		printFrame();
 		printHelloInfo();
 		printArena();
+		refresh();
 		getch();
 		endwin();
 	}
