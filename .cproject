@@ -30,6 +30,7 @@
 								</option>
 								<option id="gnu.cpp.compiler.option.include.paths.1703246942" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;C:\boost_1_55_0&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\ncursesw\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/ThirdPartyLibs}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Game/Includes}&quot;"/>
 								</option>
@@ -48,6 +49,10 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.exe.debug.1485105690" name="MinGW C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.exe.debug">
 								<option id="gnu.cpp.link.option.libs.500994893" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="boost_filesystem-mgw53-mt-d-1_55.dll"/>
+									<listOptionValue builtIn="false" value="formw.dll"/>
+									<listOptionValue builtIn="false" value="menuw.dll"/>
+									<listOptionValue builtIn="false" value="ncursesw.dll"/>
+									<listOptionValue builtIn="false" value="panelw.dll"/>
 									<listOptionValue builtIn="false" value="ws2_32"/>
 									<listOptionValue builtIn="false" value="boost_chrono-mgw53-mt-d-1_55.dll"/>
 									<listOptionValue builtIn="false" value="boost_iostreams-mgw53-mt-d-1_55.dll"/>
@@ -58,6 +63,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.282771954" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;C:\boost_1_55_0\stage\lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\ncursesw\lib&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1831209159" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>

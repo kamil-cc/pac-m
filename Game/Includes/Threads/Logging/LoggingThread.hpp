@@ -71,10 +71,10 @@ public:
 				boost::log::keywords::format = "%Severity% %Message%",
 				boost::log::keywords::auto_flush = true);
 		//Log na konsolê
-		boost::log::add_console_log(
-				std::cout,
-				boost::log::keywords::format = "%Severity% %Message%",
-				boost::log::keywords::auto_flush = true);
+		//boost::log::add_console_log(
+		//		std::cout,
+		//		boost::log::keywords::format = "%Severity% %Message%",
+		//		boost::log::keywords::auto_flush = true);
 	}
 
 	void operator()(){ //TODO Wyrzucic treœc do pliku .cpp

@@ -44,7 +44,7 @@ public:
 			std::string str = "Wiadomosc nr: " + boost::lexical_cast<std::string>(i);
 			//boost::any elem = mtfifo::LogElement(str, normal, boost::this_thread::get_id());
 			boost::any elem = mtfifo::TCPIPSerialized(str);
-			output.put(elem);
+			//output.put(elem);
 
 			boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
 		}

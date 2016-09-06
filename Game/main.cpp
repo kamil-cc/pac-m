@@ -12,6 +12,7 @@
 #include <Threads/FakeSender/FakeSender.hpp>
 #include <Threads/TCPIP/TCPIPThreadReceiver.hpp>
 #include <Threads/TCPIP/TCPIPThreadSender.hpp>
+#include <Threads/Engine/ThreadGameEngine.hpp>
 
 using namespace thd;
 
@@ -31,6 +32,9 @@ int main() {
 
 	TCPIPThreadSender TCPIPStackSender;
 	boost::thread senderThread(TCPIPStackSender);
+
+	GameEngine gameEngine;
+	boost::thread gameEngineThread(gameEngine);
 
 	//fakeSender.join();
 	//fakeSender2.join();

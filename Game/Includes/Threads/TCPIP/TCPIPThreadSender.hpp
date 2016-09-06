@@ -34,12 +34,13 @@ extern "C" {
 #include <boost/lexical_cast.hpp>
 
 namespace thd{
-	//Konfiguracja po³¹czenia sieciowego
+	//Konfiguracja po³¹czenia wychodz¹cego
 	const int GAME_SEND_PORT = 3098; //TODO wyrzucic do sk³adowej static
 	const char* SERVER_ADDRESS = "127.0.0.1";
 	const int MAX_ERROR_COUNTER = 15; //Arbitralnie dobrana wielkoœc
-	//const int BUFFER_SIZE = 1024; //Ju¿ zdefiniowano
 	const bool BLOCKING_MODE = true;
+	//const int BUFFER_SIZE = 1024; //Ju¿ zdefiniowano w pliku: TCPIPThreadReceiver.hpp
+	//int close(int s) {return closesocket(s);} //Ju¿ zdefiniowano w pliku: TCPIPThreadReceiver.hpp
 
 	/**
 	 * Klasa zawieraj¹ca obs³ugê wejœciowego stosu internetowego

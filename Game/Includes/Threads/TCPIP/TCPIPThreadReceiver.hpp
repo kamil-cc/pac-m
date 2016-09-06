@@ -37,7 +37,7 @@
 #include <MtFIFO/FIFODistributor.hpp>
 
 namespace thd{
-	//Konfiguracja po³¹czenia sieciowego
+	//Konfiguracja po³¹czenia przychodz¹cego
 	const int GAME_LISTEN_PORT = 3097; //TODO wyrzucic do pliku cpp i zrobic ustawialne
 	const int BUFFER_SIZE = 1024;
 
