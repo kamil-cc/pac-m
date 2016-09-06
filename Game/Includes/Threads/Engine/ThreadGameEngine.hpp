@@ -38,6 +38,12 @@ typedef boost::variant<char, chtype> arenaVariant_t;
 //Straszne haki, takie jak boost::array
 typedef struct arena_s{std::vector<std::vector<arenaVariant_t> > value;} arena_t;
 //Trzyliterowe aliasy dla przejrzystoœci macierzy na dole pliku
+#define LLC ACS_LLCORNER
+#define ULC ACS_ULCORNER
+#define LRC ACS_LRCORNER
+#define URC ACS_URCORNER
+#define HLI ACS_HLINE
+#define VLI ACS_VLINE
 
 class GameEngine : public boost::static_visitor<>{ // : boost::static_visitor<void>
 public:
@@ -112,7 +118,6 @@ public:
 	void printArena(){
 		for(int row = 0; row < static_cast<int>(arena_.value.size()); ++row){
 			for(int col = 0; col < static_cast<int>(arena_.value[0].size()); ++col){
-				//Jedyne u¿ycie auto w ca³ym programie
 				auto bound_visitor = boost::bind(GameEngine(), _1, row, col);
 				boost::apply_visitor(bound_visitor, arena_.value[row][col]);
 			}
