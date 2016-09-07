@@ -78,6 +78,7 @@ public:
 		ghost3Direction_ = DOWN;
 		ghost4Direction_ = RIGHT;
 		sendRequest_ = false;
+		gate_ = false;
 	}
 
 	void printHelloInfo(){
@@ -590,7 +591,8 @@ public:
 
 		arena_.value = startingArena_.value; //Kopiowanie pola rozgrywki
 
-	    boost::posix_time::ptime startGame;
+	    boost::posix_time::ptime startGame; //Czas startu gry
+	    //Czas do znikniêcia "bramy"
 	    boost::posix_time::time_duration ghostSleep = boost::posix_time::seconds(10);
 	    bool timeFlag = false;
 	    bool ghostsAreSleeping = true;
@@ -667,16 +669,15 @@ public:
 					if(diamondsLeft_ == 0)
 						win_ = true;
 			}else{
-				//TODO instrukcje do gry sieciowej
-				if(!sendRequest_){
-					std::string startMsg = "START";
-					boost::any statrReq = mtfifo::TCPIPSerialized(startMsg);
-					output.put(statrReq);
-					sendRequest_ = true;
-				}
-				//Lub pobranie z kolejki ruchu duszka analogicznie jw + pobranie ruchu duszka
 				std::string message = "SLAVE ";
 				if(slave_){
+					//TODO instrukcje do gry sieciowej
+					if(!sendRequest_){
+						std::string startMsg = "START";
+						boost::any statrReq = mtfifo::TCPIPSerialized(startMsg);
+						output.put(statrReq);
+						sendRequest_ = true;
+					}
 					switch(readedChar_){ //Gdy odczytano niew³aœciwy klawisz, nie rób nic
 					case 72: //Up
 						message += "UP";
@@ -694,6 +695,8 @@ public:
 					boost::any msgToSend = mtfifo::TCPIPSerialized(message);
 					output.put(msgToSend);
 					boost::any msgReceived = input.get();
+					log.put(boost::any(mtfifo::LogElement("PO GET", critical
+							, boost::this_thread::get_id())));
 		        	try{
 						boost::any_cast<boost::none_t>(msgReceived);
 					}catch(boost::bad_any_cast &e){
@@ -701,36 +704,52 @@ public:
 							mtfifo::TCPIPSerialized serialized
 								= boost::any_cast<mtfifo::TCPIPSerialized>(msgReceived);
 							std::string command = serialized.serialized;
+
 							std::vector<std::string> tokens;
 							boost::split(tokens, command, boost::is_any_of(" "));
 
 							if(tokens.size() < 3){
+								boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
 								continue;
 							}
 
-							if(tokens[0].compare("MASTER")){
+							if(tokens[0].find("MASTER") != std::string::npos){
 								movePacMan(boost::lexical_cast<int>(tokens[1]),
 										boost::lexical_cast<int>(tokens[2]));
-							}else if(tokens[0].compare("SLAVE")){
+							}
+							if(tokens[0].find("SLAVE") != std::string::npos){
 								moveGhost(boost::lexical_cast<int>(tokens[1]),
 										boost::lexical_cast<int>(tokens[2]));
-							}else if(tokens[0].compare("DIAMOND")){
+							}
+							if(tokens[0].find("DIAMOND") != std::string::npos){
 								removeDiamond(boost::lexical_cast<int>(tokens[1]),
 										boost::lexical_cast<int>(tokens[2]));
-							}else if(tokens[0].compare("WINNER")){
+							}
+							if(tokens[0].find("WINNER") != std::string::npos){
 								win_ = true;
 								break;
-							}else if(tokens[0].compare("LOSER")){
+							}
+							if(tokens[0].find("LOSER") != std::string::npos){
 								lose_ = true;
 								break;
 							}
 						}catch(boost::bad_any_cast &e){
 							endwin();
-							assert(!"Wrong rows num");
+							assert(!"Wrong element type");
 						}
 					}
 				}else{
-
+					if(!gate_){
+						for(int i = 21; i <= 28; ++i){
+							removeDiamond(10, i);
+							std::string clearString = "DIAMOND " + boost::lexical_cast<std::string>(10)
+									+ " " + boost::lexical_cast<std::string>(i);
+							boost::any clear = mtfifo::TCPIPSerialized(clearString);
+							output.put(clear);
+						}
+						gate_ = true;
+					}
+					movePacMan();
 				}
 			}
 
@@ -816,6 +835,8 @@ private:
 	move_t ghost2Direction_;
 	move_t ghost3Direction_;
 	move_t ghost4Direction_;
+	//
+	bool gate_;
 };
 
 }
