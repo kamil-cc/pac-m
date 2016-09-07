@@ -13,6 +13,7 @@
 //Boost
 #include <boost/any.hpp>
 #include <boost/bind.hpp>
+#include <boost/random.hpp>
 #include <boost/thread.hpp>
 #include <boost/variant.hpp>
 
@@ -256,13 +257,22 @@ public:
 	}
 
 	void moveGhost(int& row, int& col){
-		boost::random::mt19937 rng;
-		boost::random::uniform_int_distribution<> ten(1,10);
+		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
+		mtfifo::FIFO<mtfifo::FIFOOutput> log
+			= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
+
+		//boost::random::mt19937 gen{static_cast<std::uint32_t>(std::time(0))};
 
 		static int up = 0;
 		static int left = 0;
-		if(ten(rng) > 5){
-			switch(ten(rng)){
+		static boost::random::mt19937 rng{static_cast<unsigned int>(std::time(0))};
+		static boost::random::uniform_int_distribution<> ten(1,10);
+
+		int randNum = ten(rng);
+
+		if(randNum > 5){
+			randNum = ten(rng);
+			switch(randNum % 4){
 			case 0:
 			{
 				up = -1;
@@ -289,7 +299,14 @@ public:
 				break;
 			}
 		}
-		arenaVariant_t cache;
+
+		mtfifo::LogElement logMsg = mtfifo::LogElement();
+		logMsg << boost::this_thread::get_id();
+		logMsg << critical;
+		logMsg << "up: " + boost::lexical_cast<std::string>(up) + " left: " + boost::lexical_cast<std::string>(left);
+		log << logMsg;
+
+		/*arenaVariant_t cache;
 		if((col == 0) && (left == -1)){ //Teleport
 			auto bindedVisitor = boost::bind(*this, _1, row, col);
 			cache = arena_.value[row][col];
@@ -325,7 +342,7 @@ public:
 				auto localVisitor1 = boost::bind(*this, _1, row, col);
 				boost::apply_visitor(localVisitor1, arena_.value[row][col]);
 			}
-		}
+		}*/
 	}
 
 	//Punkt wejœcia w¹tku
