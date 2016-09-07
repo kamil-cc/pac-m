@@ -77,6 +77,7 @@ public:
 		ghost2Direction_ = UP;
 		ghost3Direction_ = DOWN;
 		ghost4Direction_ = RIGHT;
+		sendRequest_ = false;
 	}
 
 	void printHelloInfo(){
@@ -667,6 +668,12 @@ public:
 						win_ = true;
 			}else{
 				//TODO instrukcje do gry sieciowej
+				if(!sendRequest_){
+					std::string startMsg = "START";
+					boost::any statrReq = mtfifo::TCPIPSerialized(startMsg);
+					output.put(statrReq);
+					sendRequest_ = true;
+				}
 				//Lub pobranie z kolejki ruchu duszka analogicznie jw + pobranie ruchu duszka
 				std::string message = "SLAVE ";
 				if(slave_){
@@ -788,6 +795,7 @@ private:
 	bool slave_; //Czy poruszamy siê duszkiem
 	bool win_; //Flagi wygrania/przegrania gry
 	bool lose_;
+	bool sendRequest_; //Flaga ¿¹dania po³¹czenia do servera
 	int pacManRow_; //Po³o¿enie PacMana
 	int pacManCol_;
 	int ghost1Row_;//Po³o¿enie Duchów
