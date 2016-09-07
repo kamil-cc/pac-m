@@ -567,6 +567,12 @@ public:
 		boost::apply_visitor(localVisitor, arena_.value[row][col]);
 	}
 
+	void addDiamond(int row, int col){
+		arena_.value[row][col] = d;
+		auto localVisitor = boost::bind(*this, _1, row, col);
+		boost::apply_visitor(localVisitor, arena_.value[row][col]);
+	}
+
 	//Punkt wejœcia w¹tku
 	void operator()(){
 		initEngine();
@@ -725,6 +731,10 @@ public:
 								removeDiamond(boost::lexical_cast<int>(tokens[1]),
 										boost::lexical_cast<int>(tokens[2]));
 							}
+							if(tokens[0].find("ADD") != std::string::npos){
+								addDiamond(boost::lexical_cast<int>(tokens[1]),
+										boost::lexical_cast<int>(tokens[2]));
+							}
 							if(tokens[0].find("WINNER") != std::string::npos){
 								win_ = true;
 								break;
@@ -739,6 +749,7 @@ public:
 						}
 					}
 				}else{
+					//Gra znajduje siê w trybie master
 					if(!gate_){
 						for(int i = 21; i <= 28; ++i){
 							removeDiamond(10, i);
@@ -749,7 +760,37 @@ public:
 						}
 						gate_ = true;
 					}
+
+					int cachePacManRow = pacManRow_;
+					int cachePacManCol = pacManCol_;
+
 					movePacMan();
+					std::string masterCommand = "MASTER ";
+					masterCommand += boost::lexical_cast<std::string>(pacManRow_)
+							+ " " + boost::lexical_cast<std::string>(pacManCol_);
+					boost::any masterMove = mtfifo::TCPIPSerialized(masterCommand);
+					output.put(masterMove);
+
+					std::string diamondCommand = "DIAMOND ";
+					diamondCommand += boost::lexical_cast<std::string>(cachePacManRow)
+							+ " " + boost::lexical_cast<std::string>(cachePacManCol);
+					boost::any diamondRemove = mtfifo::TCPIPSerialized(diamondCommand);
+					output.put(diamondRemove);
+
+					boost::any slaveMove = input.get();
+		        	try{
+						boost::any_cast<boost::none_t>(elem);
+					}catch(boost::bad_any_cast &e){
+						try{
+							mtfifo::TCPIPSerialized slaveCommand =
+									boost::any_cast<mtfifo::TCPIPSerialized>(slaveMove);
+						}catch(boost::bad_any_cast &e){
+							endwin();
+							assert(!"Recived bad type");
+						}
+					}
+
+					//moveGhost(i, j);
 				}
 			}
 
