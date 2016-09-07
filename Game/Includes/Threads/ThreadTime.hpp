@@ -18,7 +18,7 @@ namespace thd{
 	const boost::chrono::milliseconds LOG_TIME = boost::chrono::milliseconds(100);
 	const boost::chrono::milliseconds TCPIP_RECEIVER_TIME = boost::chrono::milliseconds(50);
 	const boost::chrono::milliseconds TCPIP_SENDER_TIME = boost::chrono::milliseconds(50);
-	const boost::chrono::milliseconds GAME_REFRESH_TIME = boost::chrono::milliseconds(50);
+	const boost::chrono::milliseconds GAME_REFRESH_TIME = boost::chrono::milliseconds(100);
 
 	class TimeMaster{
 	public:

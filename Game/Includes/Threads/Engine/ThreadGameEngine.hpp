@@ -63,9 +63,9 @@ public:
 		ghost2Row_ = 12;
 		ghost2Col_ = 23;
 		ghost3Row_ = 12;
-		ghost3Col_ = 25;
+		ghost3Col_ = 26;
 		ghost4Row_ = 12;
-		ghost4Col_ = 27;
+		ghost4Col_ = 28;
 		pacManRow_ = 15;
 		pacManCol_ = 24;
 		diamondsLeft_ = 421;
@@ -73,6 +73,10 @@ public:
 		ghost2Diamond_ = false;
 		ghost3Diamond_ = false;
 		ghost4Diamond_ = false;
+		g1_ = LEFT;
+		g2_ = UP;
+		g3_ = DOWN;
+		g4_ = RIGHT;
 	}
 
 	void printHelloInfo(){
@@ -124,7 +128,7 @@ public:
 		initscr();
 		cbreak();
 		noecho();
-		timeout(GAME_REFRESH_TIME.count()); //B³yskawicznie zwracaj getchar
+		timeout(0);//timeout(GAME_REFRESH_TIME.count()); //B³yskawicznie zwracaj getchar
 		int maxRows = 0;
 		int maxCols = 0;
 		if(has_colors() == FALSE){
@@ -260,61 +264,117 @@ public:
 		getch();
 	}
 
-	void moveGhost(int& row, int& col, bool& diamond){
-		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
-		mtfifo::FIFO<mtfifo::FIFOOutput> log
-			= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
-
-		static int up = 0;
-		static int left = 0;
-		static boost::random::mt19937 rng{static_cast<unsigned int>(std::time(0))};
+	void moveGhost(int& row, int& col, bool& diamond, move_t& move){
+		static boost::random::mt19937 rng;
 		static boost::random::uniform_int_distribution<> ten(1,10);
-		bool nextLoop = false;
-		bool cachedDiamond = false;
-		int randNum = ten(rng);
+		static boost::random::uniform_int_distribution<> four(0, 3);
 
-		do{
-			randNum = ten(rng);
-			if((randNum > 9) || nextLoop){
-				randNum = ten(rng);
-				switch(randNum % 4){
-				case 0:
+		int up = 0;
+		int left = 0;
+		bool cachedDiamond = false;
+		switch(move){
+				case UP:
 				{
 					up = -1;
 					left = 0;
 				}
 					break;
-				case 1:
+				case DOWN:
 				{
 					up = 1;
 					left = 0;
 				}
 					break;
-				case 2:
+				case LEFT:
 				{
 					up = 0;
 					left = -1;
 				}
 					break;
-				case 3:
+				case RIGHT:
 				{
 					up = 0;
 					left = 1;
 				}
 					break;
-				}
+		}
+
+		if((((arena_.value[row + up][col + left] == n)
+						|| (arena_.value[row + up][col + left] == d))
+						|| (arena_.value[row + up][col + left] == O))
+						&& (ten(rng) != 5)){
+			if(arena_.value[row + up][col + left] == d){
+				cachedDiamond = true;
 			}
-			nextLoop = true;
 			if(arena_.value[row + up][col + left] == O){
 				lose_ = true;
-				break;
+				return;
 			}
-		}while(!(((arena_.value[row + up][col + left] == n)
-				|| (arena_.value[row + up][col + left] == d))
-				|| (arena_.value[row + up][col + left] == O)));
+			arenaVariant_t cache = arena_.value[row][col];
+			if(diamond){
+				arena_.value[row][col] = d;
+				diamond = false;
+			}else{
+				arena_.value[row][col] = n;
+			}
+			auto localVisitor = boost::bind(*this, _1, row, col);
+			boost::apply_visitor(localVisitor, arena_.value[row][col]);
+			row += up;
+			col += left;
+			arena_.value[row][col] = cache;
+			auto localVisitor1 = boost::bind(*this, _1, row, col);
+			boost::apply_visitor(localVisitor1, arena_.value[row][col]);
+			if(cachedDiamond){
+				diamond = cachedDiamond;
+			}
+			return;
+		}
 
-		if(arena_.value[row + up][col + left] == d){
+		int counter = 0;
+		int randNum;
+		int randomUp = 0;
+		int randomLeft = 0;
+		do{
+				randNum = four(rng);
+				switch(randNum){
+				case 0:
+				{
+					randomUp = -1;
+					randomLeft = 0;
+				}
+					break;
+				case 1:
+				{
+					randomUp = 1;
+					randomLeft = 0;
+				}
+					break;
+				case 2:
+				{
+					randomUp = 0;
+					randomLeft = -1;
+				}
+					break;
+				case 3:
+				{
+					randomUp = 0;
+					randomLeft = 1;
+				}
+					break;
+			}
+			if(counter++ > 10){ //Zabezpieczenie przed zakleszczeniem
+				return;
+			}
+		}while(!(((arena_.value[row + randomUp][col + randomLeft] == n)
+				|| (arena_.value[row + randomUp][col + randomLeft] == d))
+				|| (arena_.value[row + randomUp][col + randomLeft] == O)));
+
+		if(arena_.value[row + randomUp][col + randomLeft] == d){
 			cachedDiamond = true;
+		}
+		if(arena_.value[row + up][col + left] == O){
+			lose_ = true;
+			return;
 		}
 		arenaVariant_t cache = arena_.value[row][col];
 		if(diamond){
@@ -325,21 +385,23 @@ public:
 		}
 		auto localVisitor = boost::bind(*this, _1, row, col);
 		boost::apply_visitor(localVisitor, arena_.value[row][col]);
-		row += up;
-		col += left;
+		row += randomUp;
+		col += randomLeft;
 		arena_.value[row][col] = cache;
 		auto localVisitor1 = boost::bind(*this, _1, row, col);
 		boost::apply_visitor(localVisitor1, arena_.value[row][col]);
-
-		//mtfifo::LogElement logMsg = mtfifo::LogElement();
-		//logMsg << boost::this_thread::get_id();
-		//logMsg << critical;
-		//logMsg << "up: " + boost::lexical_cast<std::string>(up)
-		//		+ " left: " + boost::lexical_cast<std::string>(left);
-		//log << logMsg;
 		if(cachedDiamond){
 			diamond = cachedDiamond;
 		}
+		if(randomLeft == 1)
+			move = RIGHT;
+		if(randomLeft == -1)
+			move = LEFT;
+		if(randomUp == 1)
+			move = DOWN;
+		if(randomUp == -1)
+			move = UP;
+		return;
 	}
 
 	//Punkt wejœcia w¹tku
@@ -432,10 +494,10 @@ public:
 					}
 				}
 
-				moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_);
-				//moveGhost(ghost2Row_, ghost2Col_, ghost2Diamond_);
-				//moveGhost(ghost3Row_, ghost3Col_, ghost3Diamond_);
-				//moveGhost(ghost4Row_, ghost4Col_, ghost4Diamond_);
+				moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_, g1_);
+				moveGhost(ghost2Row_, ghost2Col_, ghost2Diamond_, g2_);
+				moveGhost(ghost3Row_, ghost3Col_, ghost3Diamond_, g3_);
+				moveGhost(ghost4Row_, ghost4Col_, ghost4Diamond_, g4_);
 
 				auto bindedVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
 				switch(readedChar_){
@@ -643,11 +705,16 @@ private:
 	int ghost3Col_;
 	int ghost4Row_;
 	int ghost4Col_;
-	//Kierunek przemieszczania siê duszków
-	bool ghost1Diamond_;//Przykrywanie kropek przez duszki
+	//
+	bool ghost1Diamond_;
 	bool ghost2Diamond_;
 	bool ghost3Diamond_;
 	bool ghost4Diamond_;
+	//
+	move_t g1_;
+	move_t g2_;
+	move_t g3_;
+	move_t g4_;
 };
 
 }
