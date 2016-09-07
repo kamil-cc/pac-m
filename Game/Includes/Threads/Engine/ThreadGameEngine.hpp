@@ -73,10 +73,10 @@ public:
 		ghost2Diamond_ = false;
 		ghost3Diamond_ = false;
 		ghost4Diamond_ = false;
-		g1_ = LEFT;
-		g2_ = UP;
-		g3_ = DOWN;
-		g4_ = RIGHT;
+		ghost1Direction_ = LEFT;
+		ghost2Direction_ = UP;
+		ghost3Direction_ = DOWN;
+		ghost4Direction_ = RIGHT;
 	}
 
 	void printHelloInfo(){
@@ -260,8 +260,11 @@ public:
 		mvprintw(++row, 0, "Thank You For Playing Pac-M!");
 		mvprintw(++row, 0, "Author: Kamil Burzynski");
 		mvprintw(++row, 0, "All Rights Reserved");
-		mvprintw(++row, 0, "Press any key to quit.");
-		getch();
+		mvprintw(++row, 0, "Press 'q' to quit.");
+		int result;
+		while((result = getch()) != static_cast<int>('q')){
+			;
+		}
 	}
 
 	void moveGhost(int& row, int& col, bool& diamond, move_t& move){
@@ -404,6 +407,164 @@ public:
 		return;
 	}
 
+	void movePacMan(){
+		auto bindedVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
+		switch(readedChar_){
+		case 72: //Up
+		{
+			if(((arena_.value[pacManRow_ - 1][pacManCol_] == M)
+								|| (arena_.value[pacManRow_ - 1][pacManCol_] == P))
+								|| ((arena_.value[pacManRow_ - 1][pacManCol_] == S)
+								|| (arena_.value[pacManRow_ - 1][pacManCol_] == T))){
+				lose_ = true;
+			}
+			if(arena_.value[pacManRow_ - 1][pacManCol_] == d){
+				--diamondsLeft_;
+			}
+			if((((arena_.value[pacManRow_ - 1][pacManCol_] == n)
+			|| (arena_.value[pacManRow_ - 1][pacManCol_] == d))
+			|| ((arena_.value[pacManRow_ - 1][pacManCol_] == M)
+			|| (arena_.value[pacManRow_ - 1][pacManCol_] == P)))
+			|| ((arena_.value[pacManRow_ - 1][pacManCol_] == S)
+			|| (arena_.value[pacManRow_ - 1][pacManCol_] == T))){
+				arena_.value[pacManRow_][pacManCol_] = n;
+				boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
+				--pacManRow_;
+				arena_.value[pacManRow_][pacManCol_] = O;
+				auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
+				boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
+			}
+		}
+			break;
+		case 80: //Down
+		{
+			if(((arena_.value[pacManRow_ + 1][pacManCol_] == M)
+					|| (arena_.value[pacManRow_ + 1][pacManCol_] == P))
+					|| ((arena_.value[pacManRow_ + 1][pacManCol_] == S)
+					|| (arena_.value[pacManRow_ + 1][pacManCol_] == T))){
+				lose_ = true;
+			}
+			if(arena_.value[pacManRow_ + 1][pacManCol_] == d){
+				--diamondsLeft_;
+			}
+			if((((arena_.value[pacManRow_ + 1][pacManCol_] == n)
+			|| (arena_.value[pacManRow_ + 1][pacManCol_] == d))
+			|| ((arena_.value[pacManRow_ + 1][pacManCol_] == M)
+			|| (arena_.value[pacManRow_ + 1][pacManCol_] == P)))
+			|| ((arena_.value[pacManRow_ + 1][pacManCol_] == S)
+			|| (arena_.value[pacManRow_ + 1][pacManCol_] == T))){
+				arena_.value[pacManRow_][pacManCol_] = n;
+				boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
+				++pacManRow_;
+				arena_.value[pacManRow_][pacManCol_] = O;
+				auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
+				boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
+			}
+		}
+			break;
+		case 75: //Left
+		{
+			if(pacManCol_ == 0){//Teleport
+				arena_.value[pacManRow_][pacManCol_] = n;
+				boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
+				pacManCol_ = GAME_COLS - 1;
+				arena_.value[pacManRow_][pacManCol_] = O;
+				auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
+				boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
+			}else{
+				if(((arena_.value[pacManRow_][pacManCol_ - 1] == M)
+						|| (arena_.value[pacManRow_][pacManCol_ - 1] == P))
+						|| ((arena_.value[pacManRow_][pacManCol_ - 1] == S)
+						|| (arena_.value[pacManRow_][pacManCol_ - 1] == T))){
+					lose_ = true;
+				}
+				if(arena_.value[pacManRow_][pacManCol_ - 1] == d){
+					--diamondsLeft_;
+				}
+				if((((arena_.value[pacManRow_][pacManCol_ - 1] == n)
+				|| (arena_.value[pacManRow_][pacManCol_ - 1] == d))
+				|| ((arena_.value[pacManRow_][pacManCol_ - 1] == M)
+				|| (arena_.value[pacManRow_][pacManCol_ - 1] == P)))
+				|| ((arena_.value[pacManRow_][pacManCol_ - 1] == S)
+				|| (arena_.value[pacManRow_][pacManCol_ - 1] == T))){
+					arena_.value[pacManRow_][pacManCol_] = n;
+					boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
+					--pacManCol_;
+					arena_.value[pacManRow_][pacManCol_] = O;
+					auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
+					boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
+				}
+			}
+		}
+			break;
+		case 77: //Right
+		{
+			if(pacManCol_ == (GAME_COLS - 1)){ //Teleport
+				arena_.value[pacManRow_][pacManCol_] = n;
+				boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
+				pacManCol_ = 0;
+				arena_.value[pacManRow_][pacManCol_] = O;
+				auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
+				boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
+			}else{
+				if(((arena_.value[pacManRow_][pacManCol_ + 1] == M)
+						|| (arena_.value[pacManRow_][pacManCol_ + 1] == P))
+						|| ((arena_.value[pacManRow_][pacManCol_ + 1] == S)
+						|| (arena_.value[pacManRow_][pacManCol_ + 1] == T))){
+					lose_ = true;
+				}
+				if(arena_.value[pacManRow_][pacManCol_ + 1] == d){
+					--diamondsLeft_;
+				}
+				if((((arena_.value[pacManRow_][pacManCol_ + 1] == n)
+				|| (arena_.value[pacManRow_][pacManCol_ + 1] == d))
+				|| ((arena_.value[pacManRow_][pacManCol_ + 1] == M)
+				|| (arena_.value[pacManRow_][pacManCol_ + 1] == P)))
+				|| ((arena_.value[pacManRow_][pacManCol_ + 1] == S)
+				|| (arena_.value[pacManRow_][pacManCol_ + 1] == T))){
+					arena_.value[pacManRow_][pacManCol_] = n;
+					boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
+					++pacManCol_;
+					arena_.value[pacManRow_][pacManCol_] = O;
+					auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
+					boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
+				}
+			}
+		}
+			break;
+		default:
+			break;
+		}
+	}
+
+	void movePacMan(int row, int col){
+		arena_.value[pacManRow_][pacManCol_] = n;
+		auto bindedVisitor1 = boost::bind(*this, _1, pacManRow_, pacManCol_);
+		boost::apply_visitor(bindedVisitor1, arena_.value[pacManRow_][pacManCol_]);
+		pacManRow_ = row;
+		pacManCol_ = col;
+		arena_.value[pacManRow_][pacManCol_] = O;
+		auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
+		boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
+	}
+
+	void moveGhost(int row, int col){
+		arena_.value[ghost1Row_][ghost1Col_] = n;
+		auto bindedVisitor1 = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
+		boost::apply_visitor(bindedVisitor1, arena_.value[ghost1Row_][ghost1Col_]);
+		ghost1Row_ = row;
+		ghost1Col_ = col;
+		arena_.value[ghost1Row_][ghost1Col_] = M;
+		auto localVisitor = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
+		boost::apply_visitor(localVisitor, arena_.value[ghost1Row_][ghost1Col_]);
+	}
+
+	void removeDiamond(int row, int col){
+		arena_.value[row][col] = n;
+		auto localVisitor = boost::bind(*this, _1, row, col);
+		boost::apply_visitor(localVisitor, arena_.value[row][col]);
+	}
+
 	//Punkt wejœcia w¹tku
 	void operator()(){
 		initEngine();
@@ -494,144 +655,76 @@ public:
 					}
 				}
 
-				moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_, g1_);
-				moveGhost(ghost2Row_, ghost2Col_, ghost2Diamond_, g2_);
-				moveGhost(ghost3Row_, ghost3Col_, ghost3Diamond_, g3_);
-				moveGhost(ghost4Row_, ghost4Col_, ghost4Diamond_, g4_);
+				moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_, ghost1Direction_);
+				moveGhost(ghost2Row_, ghost2Col_, ghost2Diamond_, ghost2Direction_);
+				moveGhost(ghost3Row_, ghost3Col_, ghost3Diamond_, ghost3Direction_);
+				moveGhost(ghost4Row_, ghost4Col_, ghost4Diamond_, ghost4Direction_);
 
-				auto bindedVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
-				switch(readedChar_){
-				case 72: //Up
-				{
-					if(((arena_.value[pacManRow_ - 1][pacManCol_] == M)
-										|| (arena_.value[pacManRow_ - 1][pacManCol_] == P))
-										|| ((arena_.value[pacManRow_ - 1][pacManCol_] == S)
-										|| (arena_.value[pacManRow_ - 1][pacManCol_] == T))){
-						lose_ = true;
-					}
-					if(arena_.value[pacManRow_ - 1][pacManCol_] == d){
-						--diamondsLeft_;
-					}
-					if((((arena_.value[pacManRow_ - 1][pacManCol_] == n)
-					|| (arena_.value[pacManRow_ - 1][pacManCol_] == d))
-					|| ((arena_.value[pacManRow_ - 1][pacManCol_] == M)
-					|| (arena_.value[pacManRow_ - 1][pacManCol_] == P)))
-					|| ((arena_.value[pacManRow_ - 1][pacManCol_] == S)
-					|| (arena_.value[pacManRow_ - 1][pacManCol_] == T))){
-						arena_.value[pacManRow_][pacManCol_] = n;
-						boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
-						--pacManRow_;
-						arena_.value[pacManRow_][pacManCol_] = O;
-						auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
-						boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
-					}
-				}
-					break;
-				case 80: //Down
-				{
-					if(((arena_.value[pacManRow_ + 1][pacManCol_] == M)
-							|| (arena_.value[pacManRow_ + 1][pacManCol_] == P))
-							|| ((arena_.value[pacManRow_ + 1][pacManCol_] == S)
-							|| (arena_.value[pacManRow_ + 1][pacManCol_] == T))){
-						lose_ = true;
-					}
-					if(arena_.value[pacManRow_ + 1][pacManCol_] == d){
-						--diamondsLeft_;
-					}
-					if((((arena_.value[pacManRow_ + 1][pacManCol_] == n)
-					|| (arena_.value[pacManRow_ + 1][pacManCol_] == d))
-					|| ((arena_.value[pacManRow_ + 1][pacManCol_] == M)
-					|| (arena_.value[pacManRow_ + 1][pacManCol_] == P)))
-					|| ((arena_.value[pacManRow_ + 1][pacManCol_] == S)
-					|| (arena_.value[pacManRow_ + 1][pacManCol_] == T))){
-						arena_.value[pacManRow_][pacManCol_] = n;
-						boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
-						++pacManRow_;
-						arena_.value[pacManRow_][pacManCol_] = O;
-						auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
-						boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
-					}
-				}
-					break;
-				case 75: //Left
-				{
-					if(pacManCol_ == 0){//Teleport
-						arena_.value[pacManRow_][pacManCol_] = n;
-						boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
-						pacManCol_ = GAME_COLS - 1;
-						arena_.value[pacManRow_][pacManCol_] = O;
-						auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
-						boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
-					}else{
-						if(((arena_.value[pacManRow_][pacManCol_ - 1] == M)
-								|| (arena_.value[pacManRow_][pacManCol_ - 1] == P))
-								|| ((arena_.value[pacManRow_][pacManCol_ - 1] == S)
-								|| (arena_.value[pacManRow_][pacManCol_ - 1] == T))){
-							lose_ = true;
-						}
-						if(arena_.value[pacManRow_][pacManCol_ - 1] == d){
-							--diamondsLeft_;
-						}
-						if((((arena_.value[pacManRow_][pacManCol_ - 1] == n)
-						|| (arena_.value[pacManRow_][pacManCol_ - 1] == d))
-						|| ((arena_.value[pacManRow_][pacManCol_ - 1] == M)
-						|| (arena_.value[pacManRow_][pacManCol_ - 1] == P)))
-						|| ((arena_.value[pacManRow_][pacManCol_ - 1] == S)
-						|| (arena_.value[pacManRow_][pacManCol_ - 1] == T))){
-							arena_.value[pacManRow_][pacManCol_] = n;
-							boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
-							--pacManCol_;
-							arena_.value[pacManRow_][pacManCol_] = O;
-							auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
-							boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
-						}
-					}
-				}
-					break;
-				case 77: //Right
-				{
-					if(pacManCol_ == (GAME_COLS - 1)){ //Teleport
-						arena_.value[pacManRow_][pacManCol_] = n;
-						boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
-						pacManCol_ = 0;
-						arena_.value[pacManRow_][pacManCol_] = O;
-						auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
-						boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
-					}else{
-						if(((arena_.value[pacManRow_][pacManCol_ + 1] == M)
-								|| (arena_.value[pacManRow_][pacManCol_ + 1] == P))
-								|| ((arena_.value[pacManRow_][pacManCol_ + 1] == S)
-								|| (arena_.value[pacManRow_][pacManCol_ + 1] == T))){
-							lose_ = true;
-						}
-						if(arena_.value[pacManRow_][pacManCol_ + 1] == d){
-							--diamondsLeft_;
-						}
-						if((((arena_.value[pacManRow_][pacManCol_ + 1] == n)
-						|| (arena_.value[pacManRow_][pacManCol_ + 1] == d))
-						|| ((arena_.value[pacManRow_][pacManCol_ + 1] == M)
-						|| (arena_.value[pacManRow_][pacManCol_ + 1] == P)))
-						|| ((arena_.value[pacManRow_][pacManCol_ + 1] == S)
-						|| (arena_.value[pacManRow_][pacManCol_ + 1] == T))){
-							arena_.value[pacManRow_][pacManCol_] = n;
-							boost::apply_visitor(bindedVisitor, arena_.value[pacManRow_][pacManCol_]);
-							++pacManCol_;
-							arena_.value[pacManRow_][pacManCol_] = O;
-							auto localVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
-							boost::apply_visitor(localVisitor, arena_.value[pacManRow_][pacManCol_]);
-						}
-					}
-				}
-					break;
-				default:
-					break;
-				}
+				movePacMan();
+
 				if(!lose_)
 					if(diamondsLeft_ == 0)
 						win_ = true;
 			}else{
 				//TODO instrukcje do gry sieciowej
 				//Lub pobranie z kolejki ruchu duszka analogicznie jw + pobranie ruchu duszka
+				std::string message = "SLAVE ";
+				if(slave_){
+					switch(readedChar_){ //Gdy odczytano niew³aœciwy klawisz, nie rób nic
+					case 72: //Up
+						message += "UP";
+						break;
+					case 80: //Down
+						message += "DOWN";
+						break;
+					case 75: //Left
+						message += "LEFT";
+						break;
+					case 77: //Right
+						message += "RIGHT";
+						break;
+					}
+					boost::any msgToSend = mtfifo::TCPIPSerialized(message);
+					output.put(msgToSend);
+					boost::any msgReceived = input.get();
+		        	try{
+						boost::any_cast<boost::none_t>(msgReceived);
+					}catch(boost::bad_any_cast &e){
+						try{
+							mtfifo::TCPIPSerialized serialized
+								= boost::any_cast<mtfifo::TCPIPSerialized>(msgReceived);
+							std::string command = serialized.serialized;
+							std::vector<std::string> tokens;
+							boost::split(tokens, command, boost::is_any_of(" "));
+
+							if(tokens.size() < 3){
+								continue;
+							}
+
+							if(tokens[0].compare("MASTER")){
+								movePacMan(boost::lexical_cast<int>(tokens[1]),
+										boost::lexical_cast<int>(tokens[2]));
+							}else if(tokens[0].compare("SLAVE")){
+								moveGhost(boost::lexical_cast<int>(tokens[1]),
+										boost::lexical_cast<int>(tokens[2]));
+							}else if(tokens[0].compare("DIAMOND")){
+								removeDiamond(boost::lexical_cast<int>(tokens[1]),
+										boost::lexical_cast<int>(tokens[2]));
+							}else if(tokens[0].compare("WINNER")){
+								win_ = true;
+								break;
+							}else if(tokens[0].compare("LOSER")){
+								lose_ = true;
+								break;
+							}
+						}catch(boost::bad_any_cast &e){
+							endwin();
+							assert(!"Wrong rows num");
+						}
+					}
+				}else{
+
+				}
 			}
 
 			//Gra zakoñczona
@@ -711,10 +804,10 @@ private:
 	bool ghost3Diamond_;
 	bool ghost4Diamond_;
 	//
-	move_t g1_;
-	move_t g2_;
-	move_t g3_;
-	move_t g4_;
+	move_t ghost1Direction_;
+	move_t ghost2Direction_;
+	move_t ghost3Direction_;
+	move_t ghost4Direction_;
 };
 
 }
