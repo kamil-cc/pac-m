@@ -69,6 +69,10 @@ public:
 		pacManRow_ = 15;
 		pacManCol_ = 24;
 		diamondsLeft_ = 421;
+		ghost1Diamond_ = false;
+		ghost2Diamond_ = false;
+		ghost3Diamond_ = false;
+		ghost4Diamond_ = false;
 	}
 
 	void printHelloInfo(){
@@ -256,93 +260,86 @@ public:
 		getch();
 	}
 
-	void moveGhost(int& row, int& col){
+	void moveGhost(int& row, int& col, bool& diamond){
 		mtfifo::FIFODistributor& fifoDistributor = mtfifo::FIFODistributor::getInstance();
 		mtfifo::FIFO<mtfifo::FIFOOutput> log
 			= fifoDistributor.getFIFO<mtfifo::FIFOOutput>(mtfifo::FIFO_LOG);
-
-		//boost::random::mt19937 gen{static_cast<std::uint32_t>(std::time(0))};
 
 		static int up = 0;
 		static int left = 0;
 		static boost::random::mt19937 rng{static_cast<unsigned int>(std::time(0))};
 		static boost::random::uniform_int_distribution<> ten(1,10);
-
+		bool nextLoop = false;
+		bool cachedDiamond = false;
 		int randNum = ten(rng);
 
-		if(randNum > 5){
+		do{
 			randNum = ten(rng);
-			switch(randNum % 4){
-			case 0:
-			{
-				up = -1;
-				left = 0;
+			if((randNum > 9) || nextLoop){
+				randNum = ten(rng);
+				switch(randNum % 4){
+				case 0:
+				{
+					up = -1;
+					left = 0;
+				}
+					break;
+				case 1:
+				{
+					up = 1;
+					left = 0;
+				}
+					break;
+				case 2:
+				{
+					up = 0;
+					left = -1;
+				}
+					break;
+				case 3:
+				{
+					up = 0;
+					left = 1;
+				}
+					break;
+				}
 			}
+			nextLoop = true;
+			if(arena_.value[row + up][col + left] == O){
+				lose_ = true;
 				break;
-			case 1:
-			{
-				up = 1;
-				left = 0;
 			}
-				break;
-			case 2:
-			{
-				up = 0;
-				left = -1;
-			}
-				break;
-			case 3:
-			{
-				up = 0;
-				left = 1;
-			}
-				break;
-			}
+		}while(!(((arena_.value[row + up][col + left] == n)
+				|| (arena_.value[row + up][col + left] == d))
+				|| (arena_.value[row + up][col + left] == O)));
+
+		if(arena_.value[row + up][col + left] == d){
+			cachedDiamond = true;
 		}
-
-		mtfifo::LogElement logMsg = mtfifo::LogElement();
-		logMsg << boost::this_thread::get_id();
-		logMsg << critical;
-		logMsg << "up: " + boost::lexical_cast<std::string>(up) + " left: " + boost::lexical_cast<std::string>(left);
-		log << logMsg;
-
-		/*arenaVariant_t cache;
-		if((col == 0) && (left == -1)){ //Teleport
-			auto bindedVisitor = boost::bind(*this, _1, row, col);
-			cache = arena_.value[row][col];
-			arena_.value[row][col] = n;
-			boost::apply_visitor(bindedVisitor, arena_.value[row][col]);
-			col = GAME_COLS - 1;
-			arena_.value[row][col] = cache;
-			auto localVisitor = boost::bind(*this, _1, row, col);
-			boost::apply_visitor(localVisitor, arena_.value[row][col]);
-		}else if((col == GAME_COLS - 1) && (left == 1)){
-			auto bindedVisitor = boost::bind(*this, _1, row, col);
-			cache = arena_.value[row][col];
-			arena_.value[row][col] = n;
-			boost::apply_visitor(bindedVisitor, arena_.value[row][col]);
-			col = 0;
-			arena_.value[row][col] = cache;
-			auto localVisitor = boost::bind(*this, _1, row, col);
-			boost::apply_visitor(localVisitor, arena_.value[row][col]);
+		arenaVariant_t cache = arena_.value[row][col];
+		if(diamond){
+			arena_.value[row][col] = d;
+			diamond = false;
 		}else{
-			if((((arena_.value[row + up][col + left] == n)
-			|| (arena_.value[row + up][col + left] == d))
-			|| ((arena_.value[row + up][col + left] == M)
-			|| (arena_.value[row + up][col + left] == P)))
-			|| ((arena_.value[row + up][col + left] == S)
-			|| (arena_.value[row + up][col + left] == T))){
-				cache = arena_.value[row][col];
-				arena_.value[row][col] = n;
-				auto localVisitor = boost::bind(*this, _1, row, col);
-				boost::apply_visitor(localVisitor, arena_.value[row][col]);
-				row += up;
-				col += left;
-				arena_.value[row][col] = cache;
-				auto localVisitor1 = boost::bind(*this, _1, row, col);
-				boost::apply_visitor(localVisitor1, arena_.value[row][col]);
-			}
-		}*/
+			arena_.value[row][col] = n;
+		}
+		auto localVisitor = boost::bind(*this, _1, row, col);
+		boost::apply_visitor(localVisitor, arena_.value[row][col]);
+		row += up;
+		col += left;
+		arena_.value[row][col] = cache;
+		auto localVisitor1 = boost::bind(*this, _1, row, col);
+		boost::apply_visitor(localVisitor1, arena_.value[row][col]);
+
+		//mtfifo::LogElement logMsg = mtfifo::LogElement();
+		//logMsg << boost::this_thread::get_id();
+		//logMsg << critical;
+		//logMsg << "up: " + boost::lexical_cast<std::string>(up)
+		//		+ " left: " + boost::lexical_cast<std::string>(left);
+		//log << logMsg;
+		if(cachedDiamond){
+			diamond = cachedDiamond;
+		}
 	}
 
 	//Punkt wejœcia w¹tku
@@ -435,10 +432,10 @@ public:
 					}
 				}
 
-				moveGhost(ghost1Row_, ghost1Col_);
-				moveGhost(ghost2Row_, ghost2Col_);
-				moveGhost(ghost3Row_, ghost3Col_);
-				moveGhost(ghost4Row_, ghost4Col_);
+				moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_);
+				//moveGhost(ghost2Row_, ghost2Col_, ghost2Diamond_);
+				//moveGhost(ghost3Row_, ghost3Col_, ghost3Diamond_);
+				//moveGhost(ghost4Row_, ghost4Col_, ghost4Diamond_);
 
 				auto bindedVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
 				switch(readedChar_){
@@ -586,6 +583,7 @@ public:
 		endwin();
 	}
 private:
+	//Czy terminal obs³uguje kolory
 	bool hasColorsFlag_;
 	//Sta³e na podstawie curses.h
 	const chtype ULC = 4194412;
@@ -598,7 +596,7 @@ private:
 	const chtype TTE = 4194423;
 	const chtype LTE = 4194420;
 	const chtype RTE = 4194421;
-	const arena_t startingArena_ = { //struct
+	const arena_t startingArena_ = { //struct //Arena od której zaczyna siê gra
 		{ //vector
 			{ULC, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, URC, ' ', ' ', ULC, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, URC},
 			{VLI, 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', VLI, ' ', ' ', VLI, 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', VLI},
@@ -627,19 +625,17 @@ private:
 			{LLC, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, LRC, ' ', ' ', LLC, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, HLI, LRC}
 		} //vector
 	}; //struct
-	arena_t arena_;
-	int diamondsLeft_;
-	int readedChar_;
-	bool gameStarted_;
-	bool singlePlayer_;
-	bool slave_;
-	bool win_;
+	arena_t arena_; //Arena na której toczy siê gra
+	int diamondsLeft_; //Licznik punktów
+	int readedChar_; //Klawisz wciœniêty przez u¿ytkownika
+	bool gameStarted_; //Czy gra altywna
+	bool singlePlayer_; //Czy w trbie jednego gracza
+	bool slave_; //Czy poruszamy siê duszkiem
+	bool win_; //Flagi wygrania/przegrania gry
 	bool lose_;
-	//Po³o¿enie PacMana
-	int pacManRow_;
+	int pacManRow_; //Po³o¿enie PacMana
 	int pacManCol_;
-	//Po³o¿enie Duchów
-	int ghost1Row_;
+	int ghost1Row_;//Po³o¿enie Duchów
 	int ghost1Col_;
 	int ghost2Row_;
 	int ghost2Col_;
@@ -647,6 +643,11 @@ private:
 	int ghost3Col_;
 	int ghost4Row_;
 	int ghost4Col_;
+	//Kierunek przemieszczania siê duszków
+	bool ghost1Diamond_;//Przykrywanie kropek przez duszki
+	bool ghost2Diamond_;
+	bool ghost3Diamond_;
+	bool ghost4Diamond_;
 };
 
 }
