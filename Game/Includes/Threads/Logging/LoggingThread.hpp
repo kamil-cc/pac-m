@@ -94,7 +94,6 @@ public:
 		ThreadTime& threadTime = ThreadTime::getInstance();
 		timeMasterPtr_ = threadTime.factory();
 
-
 		boost::random::mt19937 rng;
 		boost::random::uniform_int_distribution<> ten(1,10);
 

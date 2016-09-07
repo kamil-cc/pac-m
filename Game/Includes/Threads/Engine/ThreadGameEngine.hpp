@@ -100,7 +100,7 @@ public:
 		static int cache = diamondsLeft_;
 		mvprintw(14, GAME_COLS + 1, "        Points:");
 		swapColors(1, 3);
-		mvprintw(15, GAME_COLS + 1 + 16, "%d", (cache - diamondsLeft_));
+		mvprintw(14, GAME_COLS + 1 + 16, "%d", (cache - diamondsLeft_));
 		swapColors(3, 1);
 	}
 
@@ -255,6 +255,79 @@ public:
 		getch();
 	}
 
+	void moveGhost(int& row, int& col){
+		boost::random::mt19937 rng;
+		boost::random::uniform_int_distribution<> ten(1,10);
+
+		static int up = 0;
+		static int left = 0;
+		if(ten(rng) > 5){
+			switch(ten(rng)){
+			case 0:
+			{
+				up = -1;
+				left = 0;
+			}
+				break;
+			case 1:
+			{
+				up = 1;
+				left = 0;
+			}
+				break;
+			case 2:
+			{
+				up = 0;
+				left = -1;
+			}
+				break;
+			case 3:
+			{
+				up = 0;
+				left = 1;
+			}
+				break;
+			}
+		}
+		arenaVariant_t cache;
+		if((col == 0) && (left == -1)){ //Teleport
+			auto bindedVisitor = boost::bind(*this, _1, row, col);
+			cache = arena_.value[row][col];
+			arena_.value[row][col] = n;
+			boost::apply_visitor(bindedVisitor, arena_.value[row][col]);
+			col = GAME_COLS - 1;
+			arena_.value[row][col] = cache;
+			auto localVisitor = boost::bind(*this, _1, row, col);
+			boost::apply_visitor(localVisitor, arena_.value[row][col]);
+		}else if((col == GAME_COLS - 1) && (left == 1)){
+			auto bindedVisitor = boost::bind(*this, _1, row, col);
+			cache = arena_.value[row][col];
+			arena_.value[row][col] = n;
+			boost::apply_visitor(bindedVisitor, arena_.value[row][col]);
+			col = 0;
+			arena_.value[row][col] = cache;
+			auto localVisitor = boost::bind(*this, _1, row, col);
+			boost::apply_visitor(localVisitor, arena_.value[row][col]);
+		}else{
+			if((((arena_.value[row + up][col + left] == n)
+			|| (arena_.value[row + up][col + left] == d))
+			|| ((arena_.value[row + up][col + left] == M)
+			|| (arena_.value[row + up][col + left] == P)))
+			|| ((arena_.value[row + up][col + left] == S)
+			|| (arena_.value[row + up][col + left] == T))){
+				cache = arena_.value[row][col];
+				arena_.value[row][col] = n;
+				auto localVisitor = boost::bind(*this, _1, row, col);
+				boost::apply_visitor(localVisitor, arena_.value[row][col]);
+				row += up;
+				col += left;
+				arena_.value[row][col] = cache;
+				auto localVisitor1 = boost::bind(*this, _1, row, col);
+				boost::apply_visitor(localVisitor1, arena_.value[row][col]);
+			}
+		}
+	}
+
 	//Punkt wejœcia w¹tku
 	void operator()(){
 		initEngine();
@@ -280,7 +353,7 @@ public:
 		arena_.value = startingArena_.value; //Kopiowanie pola rozgrywki
 
 	    boost::posix_time::ptime startGame;
-	    boost::posix_time::ptime ghostSleep = boost::posix_time::seconds(10);
+	    boost::posix_time::time_duration ghostSleep = boost::posix_time::seconds(10);
 	    bool timeFlag = false;
 	    bool ghostsAreSleeping = true;
 
@@ -335,13 +408,21 @@ public:
 				if(timeFlag){
 					if((boost::posix_time::second_clock::local_time() - startGame) > ghostSleep){
 						if(ghostsAreSleeping == true){
-							for(int i = 21; i <= 27; ++i){
+							for(int i = 21; i <= 28; ++i){
 								arena_.value[10][i] = n;
+								auto bindedVisitor = boost::bind(*this, _1, 10, i);
+								boost::apply_visitor(bindedVisitor, arena_.value[10][i]);
 							}
 							ghostsAreSleeping = false;
 						}
 					}
 				}
+
+				moveGhost(ghost1Row_, ghost1Col_);
+				moveGhost(ghost2Row_, ghost2Col_);
+				moveGhost(ghost3Row_, ghost3Col_);
+				moveGhost(ghost4Row_, ghost4Col_);
+
 				auto bindedVisitor = boost::bind(*this, _1, pacManRow_, pacManCol_);
 				switch(readedChar_){
 				case 72: //Up
