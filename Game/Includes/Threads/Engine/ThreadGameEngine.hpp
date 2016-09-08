@@ -580,6 +580,12 @@ public:
 		boost::apply_visitor(localVisitor, arena_.value[ghost1Row_][ghost1Col_]);
 	}
 
+	void removeDiamond(int row, int col){
+		arena_.value[row][col] = n;
+		auto localVisitor = boost::bind(*this, _1, row, col);
+		boost::apply_visitor(localVisitor, arena_.value[row][col]);
+	}
+
 	//Punkt wejœcia w¹tku
 	void operator()(){
 		initEngine();
@@ -684,7 +690,6 @@ public:
 			}else{
 				mvprintw(GAME_ROWS - 1, TOTAL_COLS - 2, "S"); //TODO usun¹c - debug print
 				refresh();
-				std::string message = "SLAVE ";
 				if(slave_){
 					//TODO instrukcje do gry sieciowej
 					if(!sendRequest_){
@@ -693,25 +698,32 @@ public:
 						output.put(statrReq);
 						sendRequest_ = true;
 					}
+					std::string message = "SLAVE ";
 					switch(readedChar_){ //Gdy odczytano niew³aœciwy klawisz, nie rób nic
 					case 72: //Up
+					{
 						message += "UP";
+					}
 						break;
 					case 80: //Down
+					{
 						message += "DOWN";
+					}
 						break;
 					case 75: //Left
+					{
 						message += "LEFT";
+					}
 						break;
 					case 77: //Right
+					{
 						message += "RIGHT";
+					}
 						break;
 					}
-					boost::any msgToSend = mtfifo::TCPIPSerialized(message);
+					boost::any msgToSend = mtfifo::TCPIPSerialized(message); //Heartbeat
 					output.put(msgToSend);
 					boost::any msgReceived = input.get();
-					log.put(boost::any(mtfifo::LogElement("PO GET", critical
-							, boost::this_thread::get_id())));
 		        	try{
 						boost::any_cast<boost::none_t>(msgReceived);
 					}catch(boost::bad_any_cast &e){
@@ -734,6 +746,10 @@ public:
 							}
 							if(tokens[0].find("SLAVE") != std::string::npos){
 								moveGhost(boost::lexical_cast<int>(tokens[1]),
+										boost::lexical_cast<int>(tokens[2]));
+							}
+							if(tokens[0].find("DIAMOND") != std::string::npos){
+										removeDiamond(boost::lexical_cast<int>(tokens[1]),
 										boost::lexical_cast<int>(tokens[2]));
 							}
 						}catch(boost::bad_any_cast &e){
@@ -779,17 +795,35 @@ public:
 							std::vector<std::string> tokens1;
 							boost::split(tokens1, slaveString, boost::is_any_of(" "));
 
-							if(tokens1.size() < 3){
+							log.put(boost::any(mtfifo::LogElement(slaveString + "SS", critical
+									, boost::this_thread::get_id())));
+
+							if(tokens1.size() < 2){
 								boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
 								continue;
 							}
 
-							int ghostCacheRow = ghost1Row_;
-							int ghostCacheCol = ghost1Col_;
-
 							if(tokens1[0].find("SLAVE") != std::string::npos){
-								moveGhost(boost::lexical_cast<int>(tokens1[1]),
-										boost::lexical_cast<int>(tokens1[2]), ghost1Diamond_);
+
+								if(tokens1[1].find("UP")){
+									--ghost1Row_;
+									moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_);
+								}
+
+								if(tokens1[1].find("DOWN")){
+									++ghost1Row_;
+									moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_);
+								}
+
+								if(tokens1[1].find("LEFT")){
+									--ghost1Col_;
+									moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_);
+								}
+
+								if(tokens1[1].find("RIGHT")){
+									++ghost1Col_;
+									moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_);
+								}
 							}
 
 							/*std::string slaveEcho = "SLAVE "
