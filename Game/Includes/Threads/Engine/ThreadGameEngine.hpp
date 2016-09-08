@@ -757,33 +757,17 @@ public:
 							std::vector<std::string> tokens;
 							boost::split(tokens, command, boost::is_any_of(" "));
 
-							if(tokens.size() < 2){
+							if(tokens.size() < 3){
 								boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
 								continue;
 							}
-							if(tokens[0].find("SLAVE") != std::string::npos){
-								if(tokens[1].find("UP") != std::string::npos){
-									moveGhost(-1, 0, ghost1Diamond_);
-								}
-								if(tokens[1].find("DOWN") != std::string::npos){
-									moveGhost(1, 0, ghost1Diamond_);
-								}
-								if(tokens[1].find("LEFT") != std::string::npos){
-									moveGhost(0, -1, ghost1Diamond_);
-								}
-								if(tokens[1].find("RIGHT") != std::string::npos){
-									moveGhost(0, 1, ghost1Diamond_);
-								}
-							}
-							if(tokens[0].find("LOST") != std::string::npos){
-								printGoodbyeScreen(false);
-							}
-							if(tokens.size() < 2){
-								boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
-								continue;
-							}
+
 							if(tokens[0].find("MASTER") != std::string::npos){
 								movePacMan(boost::lexical_cast<int>(tokens[1]),
+										boost::lexical_cast<int>(tokens[2]));
+							}
+							if(tokens[0].find("SLAVE") != std::string::npos){
+								moveGhost(boost::lexical_cast<int>(tokens[1]),
 										boost::lexical_cast<int>(tokens[2]));
 							}
 							if(tokens[0].find("DIAMOND") != std::string::npos){
@@ -839,37 +823,31 @@ public:
 							}
 
 							if(tokens1[0].find("SLAVE") != std::string::npos){
-								std::string suffix;
+
 								if(tokens1[1].find("UP") != std::string::npos){
-									suffix = "UP";
 									moveGhost(-1, 0, ghost1Diamond_);
 								}
+
 								if(tokens1[1].find("DOWN") != std::string::npos){
-									suffix = "DOWN";
 									moveGhost(1, 0, ghost1Diamond_);
 								}
+
 								if(tokens1[1].find("LEFT") != std::string::npos){
-									suffix = "LEFT";
 									moveGhost(0, -1, ghost1Diamond_);
 								}
+
 								if(tokens1[1].find("RIGHT") != std::string::npos){
-									suffix = "RIGHT";
 									moveGhost(0, 1, ghost1Diamond_);
 								}
-
-								boost::any echo = mtfifo::TCPIPSerialized("SLAVE " + suffix);
-								output.put(echo);
 							}
+
+							std::string slaveEcho = boost::trim(slaveString);
+							boost::any echo = mtfifo::TCPIPSerialized(slaveEcho);
+							output.put(echo);
 						}catch(boost::bad_any_cast &e){
 							endwin();
 							assert(!"Recived bad type");
 						}
-					}
-					if(diamondsLeft_ == 0){
-						win_ = true;
-						boost::any echo = mtfifo::TCPIPSerialized("LOST");
-						output.put(echo);
-						printGoodbyeScreen(win_);
 					}
 				}
 				refresh();
