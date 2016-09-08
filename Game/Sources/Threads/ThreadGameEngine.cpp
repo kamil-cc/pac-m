@@ -804,7 +804,7 @@ void thd::GameEngine::operator()() {
 
 						log.put(
 								boost::any(
-										mtfifo::LogElement(slaveString + "SS",
+										mtfifo::LogElement(slaveString + " SS",
 												critical,
 												boost::this_thread::get_id())));
 
@@ -832,11 +832,11 @@ void thd::GameEngine::operator()() {
 							if (tokens1[1].find("RIGHT") != std::string::npos) {
 								moveGhost(0, 1, ghost1Diamond_);
 							}
-						}
 
-						std::string slaveEcho = slaveString;
-						boost::any echo = mtfifo::TCPIPSerialized(slaveEcho);
-						output.put(echo);
+							std::string slaveEcho = slaveString;
+							boost::any echo = mtfifo::TCPIPSerialized(slaveEcho);
+							output.put(echo);
+						}
 					} catch (boost::bad_any_cast &e) {
 						endwin();
 						assert(!"Recived bad type");
