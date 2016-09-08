@@ -805,7 +805,7 @@ public:
 									boost::any_cast<mtfifo::TCPIPSerialized>(slaveMove);
 
 							std::vector<std::string> tokens1;
-							boost::split(tokens1, slaveCommand, boost::is_any_of(" "));
+							boost::split(tokens1, slaveCommand.serialized, boost::is_any_of(" "));
 
 							if(tokens1.size() < 3){
 								boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
