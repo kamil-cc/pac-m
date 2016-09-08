@@ -730,23 +730,18 @@ void thd::GameEngine::operator()() {
 							continue;
 						}
 
-						if (tokens[0].find("SLAVE") != std::string::npos) {
-							std::vector<std::string> tokens;
-							boost::split(tokens, command, boost::is_any_of(" "));
-
-							if(tokens[0].find("SLAVE") != std::string::npos){
-								if(tokens[1].find("UP") != std::string::npos){
-									moveGhost(-1, 0, ghost1Diamond_);
-								}
-								if(tokens[1].find("DOWN") != std::string::npos){
-									moveGhost(1, 0, ghost1Diamond_);
-								}
-								if(tokens[1].find("LEFT") != std::string::npos){
-									moveGhost(0, -1, ghost1Diamond_);
-								}
-								if(tokens[1].find("RIGHT") != std::string::npos){
-									moveGhost(0, 1, ghost1Diamond_);
-								}
+						if(tokens[0].find("SLAVE") != std::string::npos){
+							if(tokens[1].find("UP") != std::string::npos){
+								moveGhost(-1, 0, ghost1Diamond_);
+							}
+							if(tokens[1].find("DOWN") != std::string::npos){
+								moveGhost(1, 0, ghost1Diamond_);
+							}
+							if(tokens[1].find("LEFT") != std::string::npos){
+								moveGhost(0, -1, ghost1Diamond_);
+							}
+							if(tokens[1].find("RIGHT") != std::string::npos){
+								moveGhost(0, 1, ghost1Diamond_);
 							}
 						}
 
