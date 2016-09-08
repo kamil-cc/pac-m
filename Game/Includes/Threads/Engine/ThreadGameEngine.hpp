@@ -718,26 +718,32 @@ public:
 					case 72: //Up
 					{
 						message += "UP";
+						boost::any msgToSend = mtfifo::TCPIPSerialized(message); //Heartbeat
+						output.put(msgToSend);
 					}
 						break;
 					case 80: //Down
 					{
 						message += "DOWN";
+						boost::any msgToSend = mtfifo::TCPIPSerialized(message); //Heartbeat
+						output.put(msgToSend);
 					}
 						break;
 					case 75: //Left
 					{
 						message += "LEFT";
+						boost::any msgToSend = mtfifo::TCPIPSerialized(message); //Heartbeat
+						output.put(msgToSend);
 					}
 						break;
 					case 77: //Right
 					{
 						message += "RIGHT";
+						boost::any msgToSend = mtfifo::TCPIPSerialized(message); //Heartbeat
+						output.put(msgToSend);
 					}
 						break;
 					}
-					boost::any msgToSend = mtfifo::TCPIPSerialized(message); //Heartbeat
-					output.put(msgToSend);
 
 					boost::any msgReceived = input.get();
 		        	try{
@@ -835,20 +841,9 @@ public:
 								}
 							}
 
-							/*std::string slaveEcho = "SLAVE "
-									+ boost::lexical_cast<std::string>(ghost1Row_)
-									+ " " + boost::lexical_cast<std::string>(ghost1Col_);
+							std::string slaveEcho = boost::trim(slaveString);
 							boost::any echo = mtfifo::TCPIPSerialized(slaveEcho);
 							output.put(echo);
-
-							if(arena_.value[ghostCacheRow][ghostCacheCol] == d){
-								std::string diamond = "ADD "
-										+ boost::lexical_cast<std::string>(ghostCacheRow)
-										+ " " + boost::lexical_cast<std::string>(ghostCacheCol);
-								boost::any diamontBack = mtfifo::TCPIPSerialized(diamond);
-								output.put(diamontBack);
-							}*/
-
 						}catch(boost::bad_any_cast &e){
 							endwin();
 							assert(!"Recived bad type");
