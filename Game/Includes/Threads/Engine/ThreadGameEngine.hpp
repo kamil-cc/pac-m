@@ -841,7 +841,7 @@ public:
 								}
 							}
 
-							std::string slaveEcho = boost::trim(slaveString);
+							std::string slaveEcho = slaveString;
 							boost::any echo = mtfifo::TCPIPSerialized(slaveEcho);
 							output.put(echo);
 						}catch(boost::bad_any_cast &e){
