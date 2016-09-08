@@ -784,6 +784,32 @@ public:
 						try{
 							mtfifo::TCPIPSerialized slaveCommand =
 									boost::any_cast<mtfifo::TCPIPSerialized>(slaveMove);
+
+							std::vector<std::string> tokens;
+							boost::split(tokens, slaveCommand, boost::is_any_of(" "));
+
+							if(tokens.size() < 3){
+								boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
+								continue;
+							}
+
+							int ghostCacheRow = ghost1Row_;
+							int ghostCacheCol = ghost1Col_;
+
+							if(tokens[0].find("SLAVE") != std::string::npos){
+								moveGhost(boost::lexical_cast<int>(tokens[1]),
+										boost::lexical_cast<int>(tokens[2]));
+							}
+
+							std::string slaveEcho = "SLAVE "
+									+ boost::lexical_cast<std::string>(ghost1Row_)
+									+ " " + boost::lexical_cast<std::string>(ghost1Col_);
+							boost::any echo = mtfifo::TCPIPSerialized(slaveEcho);
+
+							if(arena_.value[ghostCacheRow][ghostCacheCol] == d){
+
+							}
+
 						}catch(boost::bad_any_cast &e){
 							endwin();
 							assert(!"Recived bad type");
