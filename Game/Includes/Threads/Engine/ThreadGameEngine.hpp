@@ -561,23 +561,38 @@ public:
 		boost::apply_visitor(localVisitor, arena_.value[ghost1Row_][ghost1Col_]);
 	}
 
-	void moveGhost(int row, int col, bool& cache){
-		if(cache){
-			arena_.value[ghost1Row_][ghost1Col_] = d;
-			cache = false;
-		}else{
-			arena_.value[ghost1Row_][ghost1Col_] = n;
+	void moveGhost(int up, int left, bool& diamond){
+		bool cachedDiamond = false;
+
+		if(((arena_.value[ghost1Row_ + up][ghost1Col_ + left] == n)
+					|| (arena_.value[ghost1Row_ + up][ghost1Col_ + left] == d))
+					|| (arena_.value[ghost1Row_ + up][ghost1Col_ + left] == O)){
+			if(arena_.value[ghost1Row_ + up][ghost1Col_ + left] == d){
+				cachedDiamond = true;
+			}
+			if(arena_.value[ghost1Row_ + up][ghost1Col_ + left] == O){
+				lose_ = true;
+				return;
+			}
+			arenaVariant_t cache = arena_.value[ghost1Row_][ghost1Col_];
+			if(diamond){
+				arena_.value[ghost1Row_][ghost1Col_] = d;
+				diamond = false;
+			}else{
+				arena_.value[ghost1Row_][ghost1Col_] = n;
+			}
+			auto localVisitor = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
+			boost::apply_visitor(localVisitor, arena_.value[ghost1Row_][ghost1Col_]);
+			ghost1Row_ += up;
+			ghost1Col_ += left;
+			arena_.value[ghost1Row_][ghost1Col_] = cache;
+			auto localVisitor1 = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
+			boost::apply_visitor(localVisitor1, arena_.value[ghost1Row_][ghost1Col_]);
+			if(cachedDiamond){
+				diamond = cachedDiamond;
+			}
+		return;
 		}
-		auto bindedVisitor1 = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
-		boost::apply_visitor(bindedVisitor1, arena_.value[ghost1Row_][ghost1Col_]);
-		ghost1Row_ = row;
-		ghost1Col_ = col;
-		if(arena_.value[ghost1Row_][ghost1Col_] == d){
-			cache = true;
-		}
-		arena_.value[ghost1Row_][ghost1Col_] = M;
-		auto localVisitor = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
-		boost::apply_visitor(localVisitor, arena_.value[ghost1Row_][ghost1Col_]);
 	}
 
 	void removeDiamond(int row, int col){
@@ -723,6 +738,7 @@ public:
 					}
 					boost::any msgToSend = mtfifo::TCPIPSerialized(message); //Heartbeat
 					output.put(msgToSend);
+
 					boost::any msgReceived = input.get();
 		        	try{
 						boost::any_cast<boost::none_t>(msgReceived);
@@ -772,9 +788,6 @@ public:
 						gate_ = true;
 					}
 
-					int cachePacManRow = pacManRow_;
-					int cachePacManCol = pacManCol_;
-
 					movePacMan();
 					std::string masterCommand = "MASTER ";
 					masterCommand += boost::lexical_cast<std::string>(pacManRow_)
@@ -805,24 +818,20 @@ public:
 
 							if(tokens1[0].find("SLAVE") != std::string::npos){
 
-								if(tokens1[1].find("UP")){
-									--ghost1Row_;
-									moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_);
+								if(tokens1[1].find("UP") != std::string::npos){
+									moveGhost(-1, 0, ghost1Diamond_);
 								}
 
-								if(tokens1[1].find("DOWN")){
-									++ghost1Row_;
-									moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_);
+								if(tokens1[1].find("DOWN") != std::string::npos){
+									moveGhost(1, 0, ghost1Diamond_);
 								}
 
-								if(tokens1[1].find("LEFT")){
-									--ghost1Col_;
-									moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_);
+								if(tokens1[1].find("LEFT") != std::string::npos){
+									moveGhost(0, -1, ghost1Diamond_);
 								}
 
-								if(tokens1[1].find("RIGHT")){
-									++ghost1Col_;
-									moveGhost(ghost1Row_, ghost1Col_, ghost1Diamond_);
+								if(tokens1[1].find("RIGHT") != std::string::npos){
+									moveGhost(0, 1, ghost1Diamond_);
 								}
 							}
 
@@ -846,6 +855,7 @@ public:
 						}
 					}
 				}
+				refresh();
 			}
 
 			//Gra zakoñczona
