@@ -561,6 +561,25 @@ public:
 		boost::apply_visitor(localVisitor, arena_.value[ghost1Row_][ghost1Col_]);
 	}
 
+	void moveGhost(int row, int col, bool& cache){
+		if(cache){
+			arena_.value[ghost1Row_][ghost1Col_] = d;
+			cache = false;
+		}else{
+			arena_.value[ghost1Row_][ghost1Col_] = n;
+		}
+		auto bindedVisitor1 = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
+		boost::apply_visitor(bindedVisitor1, arena_.value[ghost1Row_][ghost1Col_]);
+		ghost1Row_ = row;
+		ghost1Col_ = col;
+		if(arena_.value[ghost1Row_][ghost1Col_] == d){
+			cache = true;
+		}
+		arena_.value[ghost1Row_][ghost1Col_] = M;
+		auto localVisitor = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
+		boost::apply_visitor(localVisitor, arena_.value[ghost1Row_][ghost1Col_]);
+	}
+
 	void removeDiamond(int row, int col){
 		arena_.value[row][col] = n;
 		auto localVisitor = boost::bind(*this, _1, row, col);
@@ -779,16 +798,16 @@ public:
 
 					boost::any slaveMove = input.get();
 		        	try{
-						boost::any_cast<boost::none_t>(elem);
+						boost::any_cast<boost::none_t>(slaveMove);
 					}catch(boost::bad_any_cast &e){
 						try{
 							mtfifo::TCPIPSerialized slaveCommand =
 									boost::any_cast<mtfifo::TCPIPSerialized>(slaveMove);
 
-							std::vector<std::string> tokens;
-							boost::split(tokens, slaveCommand, boost::is_any_of(" "));
+							std::vector<std::string> tokens1;
+							boost::split(tokens1, slaveCommand, boost::is_any_of(" "));
 
-							if(tokens.size() < 3){
+							if(tokens1.size() < 3){
 								boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
 								continue;
 							}
@@ -796,18 +815,23 @@ public:
 							int ghostCacheRow = ghost1Row_;
 							int ghostCacheCol = ghost1Col_;
 
-							if(tokens[0].find("SLAVE") != std::string::npos){
-								moveGhost(boost::lexical_cast<int>(tokens[1]),
-										boost::lexical_cast<int>(tokens[2]));
+							if(tokens1[0].find("SLAVE") != std::string::npos){
+								moveGhost(boost::lexical_cast<int>(tokens1[1]),
+										boost::lexical_cast<int>(tokens1[2]), ghost1Diamond_);
 							}
 
 							std::string slaveEcho = "SLAVE "
 									+ boost::lexical_cast<std::string>(ghost1Row_)
 									+ " " + boost::lexical_cast<std::string>(ghost1Col_);
 							boost::any echo = mtfifo::TCPIPSerialized(slaveEcho);
+							output.put(echo);
 
 							if(arena_.value[ghostCacheRow][ghostCacheCol] == d){
-
+								std::string diamond = "ADD "
+										+ boost::lexical_cast<std::string>(ghostCacheRow)
+										+ " " + boost::lexical_cast<std::string>(ghostCacheCol);
+								boost::any diamontBack = mtfifo::TCPIPSerialized(diamond);
+								output.put(diamontBack);
 							}
 
 						}catch(boost::bad_any_cast &e){
