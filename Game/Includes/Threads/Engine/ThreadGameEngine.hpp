@@ -561,37 +561,6 @@ public:
 		boost::apply_visitor(localVisitor, arena_.value[ghost1Row_][ghost1Col_]);
 	}
 
-	void moveGhost(int row, int col, bool& cache){
-		if(cache){
-			arena_.value[ghost1Row_][ghost1Col_] = d;
-			cache = false;
-		}else{
-			arena_.value[ghost1Row_][ghost1Col_] = n;
-		}
-		auto bindedVisitor1 = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
-		boost::apply_visitor(bindedVisitor1, arena_.value[ghost1Row_][ghost1Col_]);
-		ghost1Row_ = row;
-		ghost1Col_ = col;
-		if(arena_.value[ghost1Row_][ghost1Col_] == d){
-			cache = true;
-		}
-		arena_.value[ghost1Row_][ghost1Col_] = M;
-		auto localVisitor = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
-		boost::apply_visitor(localVisitor, arena_.value[ghost1Row_][ghost1Col_]);
-	}
-
-	void removeDiamond(int row, int col){
-		arena_.value[row][col] = n;
-		auto localVisitor = boost::bind(*this, _1, row, col);
-		boost::apply_visitor(localVisitor, arena_.value[row][col]);
-	}
-
-	void addDiamond(int row, int col){
-		arena_.value[row][col] = d;
-		auto localVisitor = boost::bind(*this, _1, row, col);
-		boost::apply_visitor(localVisitor, arena_.value[row][col]);
-	}
-
 	//Punkt wejœcia w¹tku
 	void operator()(){
 		initEngine();
@@ -694,6 +663,8 @@ public:
 					if(diamondsLeft_ == 0)
 						win_ = true;
 			}else{
+				mvprintw(GAME_ROWS - 1, TOTAL_COLS - 2, "S"); //TODO usun¹c - debug print
+				refresh();
 				std::string message = "SLAVE ";
 				if(slave_){
 					//TODO instrukcje do gry sieciowej
@@ -746,28 +717,14 @@ public:
 								moveGhost(boost::lexical_cast<int>(tokens[1]),
 										boost::lexical_cast<int>(tokens[2]));
 							}
-							if(tokens[0].find("DIAMOND") != std::string::npos){
-								removeDiamond(boost::lexical_cast<int>(tokens[1]),
-										boost::lexical_cast<int>(tokens[2]));
-							}
-							if(tokens[0].find("ADD") != std::string::npos){
-								addDiamond(boost::lexical_cast<int>(tokens[1]),
-										boost::lexical_cast<int>(tokens[2]));
-							}
-							if(tokens[0].find("WINNER") != std::string::npos){
-								win_ = true;
-								break;
-							}
-							if(tokens[0].find("LOSER") != std::string::npos){
-								lose_ = true;
-								break;
-							}
 						}catch(boost::bad_any_cast &e){
 							endwin();
 							assert(!"Wrong element type");
 						}
 					}
 				}else{
+					mvprintw(GAME_ROWS - 1, TOTAL_COLS - 2, "M"); //TODO usun¹c - debug print
+					refresh();
 					//Gra znajduje siê w trybie master
 					if(!gate_){
 						for(int i = 21; i <= 28; ++i){
@@ -790,12 +747,6 @@ public:
 					boost::any masterMove = mtfifo::TCPIPSerialized(masterCommand);
 					output.put(masterMove);
 
-					std::string diamondCommand = "DIAMOND ";
-					diamondCommand += boost::lexical_cast<std::string>(cachePacManRow)
-							+ " " + boost::lexical_cast<std::string>(cachePacManCol);
-					boost::any diamondRemove = mtfifo::TCPIPSerialized(diamondCommand);
-					output.put(diamondRemove);
-
 					boost::any slaveMove = input.get();
 		        	try{
 						boost::any_cast<boost::none_t>(slaveMove);
@@ -804,8 +755,10 @@ public:
 							mtfifo::TCPIPSerialized slaveCommand =
 									boost::any_cast<mtfifo::TCPIPSerialized>(slaveMove);
 
+							std::string slaveString = slaveCommand.serialized;
+
 							std::vector<std::string> tokens1;
-							boost::split(tokens1, slaveCommand.serialized, boost::is_any_of(" "));
+							boost::split(tokens1, slaveString, boost::is_any_of(" "));
 
 							if(tokens1.size() < 3){
 								boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
@@ -838,7 +791,7 @@ public:
 							endwin();
 							assert(!"Recived bad type");
 						}
-					}
+					}*/
 
 					//moveGhost(i, j);
 				}
