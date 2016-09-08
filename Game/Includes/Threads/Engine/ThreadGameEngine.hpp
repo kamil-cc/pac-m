@@ -775,6 +775,9 @@ public:
 									moveGhost(0, 1, ghost1Diamond_);
 								}
 							}
+							if(tokens[0].find("LOST") != std::string::npos){
+								printGoodbyeScreen(false);
+							}
 							if(tokens.size() < 2){
 								boost::this_thread::sleep_for(boost::chrono::milliseconds(GAME_REFRESH_TIME));
 								continue;
@@ -861,6 +864,12 @@ public:
 							endwin();
 							assert(!"Recived bad type");
 						}
+					}
+					if(diamondsLeft_ == 0){
+						win_ = true;
+						boost::any echo = mtfifo::TCPIPSerialized("LOST");
+						output.put(echo);
+						printGoodbyeScreen(win_);
 					}
 				}
 				refresh();
