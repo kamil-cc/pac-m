@@ -561,6 +561,25 @@ public:
 		boost::apply_visitor(localVisitor, arena_.value[ghost1Row_][ghost1Col_]);
 	}
 
+	void moveGhost(int row, int col, bool& cache){
+		if(cache){
+			arena_.value[ghost1Row_][ghost1Col_] = d;
+			cache = false;
+		}else{
+			arena_.value[ghost1Row_][ghost1Col_] = n;
+		}
+		auto bindedVisitor1 = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
+		boost::apply_visitor(bindedVisitor1, arena_.value[ghost1Row_][ghost1Col_]);
+		ghost1Row_ = row;
+		ghost1Col_ = col;
+		if(arena_.value[ghost1Row_][ghost1Col_] == d){
+			cache = true;
+		}
+		arena_.value[ghost1Row_][ghost1Col_] = M;
+		auto localVisitor = boost::bind(*this, _1, ghost1Row_, ghost1Col_);
+		boost::apply_visitor(localVisitor, arena_.value[ghost1Row_][ghost1Col_]);
+	}
+
 	//Punkt wejœcia w¹tku
 	void operator()(){
 		initEngine();
@@ -773,7 +792,7 @@ public:
 										boost::lexical_cast<int>(tokens1[2]), ghost1Diamond_);
 							}
 
-							std::string slaveEcho = "SLAVE "
+							/*std::string slaveEcho = "SLAVE "
 									+ boost::lexical_cast<std::string>(ghost1Row_)
 									+ " " + boost::lexical_cast<std::string>(ghost1Col_);
 							boost::any echo = mtfifo::TCPIPSerialized(slaveEcho);
@@ -785,15 +804,13 @@ public:
 										+ " " + boost::lexical_cast<std::string>(ghostCacheCol);
 								boost::any diamontBack = mtfifo::TCPIPSerialized(diamond);
 								output.put(diamontBack);
-							}
+							}*/
 
 						}catch(boost::bad_any_cast &e){
 							endwin();
 							assert(!"Recived bad type");
 						}
-					}*/
-
-					//moveGhost(i, j);
+					}
 				}
 			}
 
