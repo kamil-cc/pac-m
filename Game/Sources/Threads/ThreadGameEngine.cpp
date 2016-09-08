@@ -723,6 +723,33 @@ void thd::GameEngine::operator()() {
 						std::vector<std::string> tokens;
 						boost::split(tokens, command, boost::is_any_of(" "));
 
+						if (tokens.size() < 2) {
+							boost::this_thread::sleep_for(
+									boost::chrono::milliseconds(
+											GAME_REFRESH_TIME));
+							continue;
+						}
+
+						if (tokens[0].find("SLAVE") != std::string::npos) {
+							std::vector<std::string> tokens;
+							boost::split(tokens, command, boost::is_any_of(" "));
+
+							if(tokens[0].find("SLAVE") != std::string::npos){
+								if(tokens[1].find("UP") != std::string::npos){
+									moveGhost(-1, 0, ghost1Diamond_);
+								}
+								if(tokens[1].find("DOWN") != std::string::npos){
+									moveGhost(1, 0, ghost1Diamond_);
+								}
+								if(tokens[1].find("LEFT") != std::string::npos){
+									moveGhost(0, -1, ghost1Diamond_);
+								}
+								if(tokens[1].find("RIGHT") != std::string::npos){
+									moveGhost(0, 1, ghost1Diamond_);
+								}
+							}
+						}
+
 						if (tokens.size() < 3) {
 							boost::this_thread::sleep_for(
 									boost::chrono::milliseconds(
@@ -732,10 +759,6 @@ void thd::GameEngine::operator()() {
 
 						if (tokens[0].find("MASTER") != std::string::npos) {
 							movePacMan(boost::lexical_cast<int>(tokens[1]),
-									boost::lexical_cast<int>(tokens[2]));
-						}
-						if (tokens[0].find("SLAVE") != std::string::npos) {
-							moveGhost(boost::lexical_cast<int>(tokens[1]),
 									boost::lexical_cast<int>(tokens[2]));
 						}
 						if (tokens[0].find("DIAMOND") != std::string::npos) {
