@@ -63,7 +63,6 @@ typedef struct arena_s{std::vector<std::vector<arenaVariant_t> > value;} arena_t
 class GameEngine : public boost::static_visitor<>{ // : boost::static_visitor<void>
 public:
 	GameEngine();
-
 	void printHelloInfo();
 	void printPoints();
 	void printArena(const arena_t& arena);
@@ -74,15 +73,16 @@ public:
 	void printPressed(int key);
 	void callQuit();
 	void printGoodbyeScreen(bool win);
+	void deserializeSlave(const std::string& deserializeMsg);
+	void deserializeMaster(const std::string& deserializeMsg);
 	void moveGhost(int& row, int& col, bool& diamond, move_t& move);
-
 	void movePacMan();
 	void movePacMan(int row, int col);
 	void moveGhost(int row, int col);
-
 	void moveGhost(int up, int left, bool& diamond);
 	void removeDiamond(int row, int col);
 	void operator()();
+	virtual ~GameEngine();
 private:
 	//Czy terminal obs³uguje kolory
 	bool hasColorsFlag_;

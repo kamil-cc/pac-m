@@ -559,6 +559,130 @@ void thd::GameEngine::removeDiamond(int row, int col) {
 	boost::apply_visitor(localVisitor, arena_.value[row][col]);
 }
 
+/**
+ * Zwraca true jeœli wszystko OK, w pp false
+ */
+void thd::GameEngine::deserializeSlave(const std::string& deserializeMsg){
+	//Rekursja nie bêdzie g³êboka, dlatego parametr recursive jest przekazany przez wartoœc
+	std::vector<std::string> tokens;
+	boost::split(tokens, deserializeMsg, boost::is_any_of(" "));
+	int tokensParsed = 0;
+
+	if (tokens.size() < 2) {
+		boost::this_thread::sleep_for(
+				boost::chrono::milliseconds(
+						GAME_REFRESH_TIME));
+		return;
+	}
+
+	if(tokens[0].find("SLAVE") != std::string::npos){
+		if(tokens[1].find("UP") != std::string::npos){
+			moveGhost(-1, 0, ghost1Diamond_);
+			tokensParsed = 2;
+		}
+		if(tokens[1].find("DOWN") != std::string::npos){
+			moveGhost(1, 0, ghost1Diamond_);
+			tokensParsed += 2;
+		}
+		if(tokens[1].find("LEFT") != std::string::npos){
+			moveGhost(0, -1, ghost1Diamond_);
+			tokensParsed += 2;
+		}
+		if(tokens[1].find("RIGHT") != std::string::npos){
+			moveGhost(0, 1, ghost1Diamond_);
+			tokensParsed += 2;
+		}
+	}
+
+	if (tokens.size() < 3) {
+		boost::this_thread::sleep_for(
+				boost::chrono::milliseconds(
+						GAME_REFRESH_TIME));
+		return;
+	}
+
+	if (tokens[0].find("MASTER") != std::string::npos) {
+		try{
+			int arg1 = boost::lexical_cast<int>(tokens[1]);
+			try{
+				int arg2 = boost::lexical_cast<int>(tokens[2]);
+				movePacMan(arg1, arg2);
+				tokensParsed += 3;
+
+			}catch(const boost::bad_lexical_cast& e){
+				return;
+			}
+		}catch(const boost::bad_lexical_cast& e){
+			return;
+		}
+
+	}
+	if (tokens[0].find("DIAMOND") != std::string::npos) {
+		try{
+			int arg1 = boost::lexical_cast<int>(tokens[1]);
+			try{
+				int arg2 = boost::lexical_cast<int>(tokens[2]);
+				removeDiamond(arg1, arg2);
+				tokensParsed += 3;
+			}catch(const boost::bad_lexical_cast& e){
+				return;
+			}
+		}catch(const boost::bad_lexical_cast& e){
+			return;
+		}
+	}
+
+	if(tokensParsed < static_cast<int>(tokens.size())){
+		std::string rest;
+		for(int i = tokensParsed; i < static_cast<int>(tokens.size()); ++i){
+			rest += tokens[i];
+		}
+		deserializeSlave(rest);
+	}
+	return;
+}
+
+void thd::GameEngine::deserializeMaster(const std::string& deserializeMsg){
+	std::vector<std::string> tokens;
+	boost::split(tokens, deserializeMsg, boost::is_any_of(" "));
+	int tokensParsed = 0;
+
+	if (tokens.size() < 2) {
+		return;
+	}
+
+	if (tokens[0].find("SLAVE") != std::string::npos) {
+
+		if (tokens[1].find("UP") != std::string::npos) {
+			moveGhost(-1, 0, ghost1Diamond_);
+			tokensParsed += 2;
+		}
+
+		if (tokens[1].find("DOWN") != std::string::npos) {
+			moveGhost(1, 0, ghost1Diamond_);
+			tokensParsed += 2;
+		}
+
+		if (tokens[1].find("LEFT") != std::string::npos) {
+			moveGhost(0, -1, ghost1Diamond_);
+			tokensParsed += 2;
+		}
+
+		if (tokens[1].find("RIGHT") != std::string::npos) {
+			moveGhost(0, 1, ghost1Diamond_);
+			tokensParsed += 2;
+		}
+	}
+
+	if(tokensParsed < static_cast<int>(tokens.size())){
+		std::string rest;
+		for(int i = tokensParsed; i <  static_cast<int>(tokens.size()); ++i){
+			rest += tokens[i];
+		}
+		deserializeMaster(rest);
+	}
+}
+
 //Punkt wejœcia w¹tku
 void thd::GameEngine::operator()() {
 	initEngine();
@@ -593,14 +717,11 @@ void thd::GameEngine::operator()() {
 	bool ghostsAreSleeping = true;
 
 	while (1) {
-		//TODO do loga: game is ready
-
 		//Sekcja czytania z klawiatury
 		readedChar_ = getch();
 		if (readedChar_ != ERR)
 			printPressed(readedChar_);
 		if (readedChar_ == static_cast<int>('q')) {
-			//TODO do loga program exited normally
 			callQuit();
 			break;
 		}
@@ -621,7 +742,7 @@ void thd::GameEngine::operator()() {
 					try {
 						mtfifo::TCPIPSerialized serializedMsg = boost::any_cast<
 								mtfifo::TCPIPSerialized>(elem);
-						if (serializedMsg.serialized.compare("START")) {
+						if (serializedMsg.serialized.find("START") != std::string::npos) {
 							gameStarted_ = true;
 						}
 					} catch (boost::bad_any_cast &e) {
@@ -667,12 +788,12 @@ void thd::GameEngine::operator()() {
 				if (diamondsLeft_ == 0)
 					win_ = true;
 		} else {
-			mvprintw(GAME_ROWS - 1, TOTAL_COLS - 2, "S"); //TODO usun¹c - debug print
-			refresh();
 			if (slave_) {
-				//TODO instrukcje do gry sieciowej
+				//Gra sieciowa w trybie slave
+				mvprintw(GAME_ROWS - 1, TOTAL_COLS - 2, "S");
+				refresh();
 				if (!sendRequest_) {
-					std::string startMsg = "START";
+					std::string startMsg = "START ";
 					boost::any statrReq = mtfifo::TCPIPSerialized(startMsg);
 					output.put(statrReq);
 					sendRequest_ = true;
@@ -681,28 +802,28 @@ void thd::GameEngine::operator()() {
 				switch (readedChar_) { //Gdy odczytano niew³aœciwy klawisz, nie rób nic
 				case 72: //Up
 				{
-					message += "UP";
+					message += "UP ";
 					boost::any msgToSend = mtfifo::TCPIPSerialized(message); //Heartbeat
 					output.put(msgToSend);
 				}
 					break;
 				case 80: //Down
 				{
-					message += "DOWN";
+					message += "DOWN ";
 					boost::any msgToSend = mtfifo::TCPIPSerialized(message); //Heartbeat
 					output.put(msgToSend);
 				}
 					break;
 				case 75: //Left
 				{
-					message += "LEFT";
+					message += "LEFT ";
 					boost::any msgToSend = mtfifo::TCPIPSerialized(message); //Heartbeat
 					output.put(msgToSend);
 				}
 					break;
 				case 77: //Right
 				{
-					message += "RIGHT";
+					message += "RIGHT ";
 					boost::any msgToSend = mtfifo::TCPIPSerialized(message); //Heartbeat
 					output.put(msgToSend);
 				}
@@ -717,53 +838,13 @@ void thd::GameEngine::operator()() {
 						mtfifo::TCPIPSerialized serialized = boost::any_cast<
 								mtfifo::TCPIPSerialized>(msgReceived);
 						std::string command = serialized.serialized;
-
-						std::vector<std::string> tokens;
-						boost::split(tokens, command, boost::is_any_of(" "));
-
-						if (tokens.size() < 2) {
-							boost::this_thread::sleep_for(
-									boost::chrono::milliseconds(
-											GAME_REFRESH_TIME));
-							continue;
-						}
-
-						if(tokens[0].find("SLAVE") != std::string::npos){
-							if(tokens[1].find("UP") != std::string::npos){
-								moveGhost(-1, 0, ghost1Diamond_);
-							}
-							if(tokens[1].find("DOWN") != std::string::npos){
-								moveGhost(1, 0, ghost1Diamond_);
-							}
-							if(tokens[1].find("LEFT") != std::string::npos){
-								moveGhost(0, -1, ghost1Diamond_);
-							}
-							if(tokens[1].find("RIGHT") != std::string::npos){
-								moveGhost(0, 1, ghost1Diamond_);
-							}
-						}
-
-						if (tokens.size() < 3) {
-							boost::this_thread::sleep_for(
-									boost::chrono::milliseconds(
-											GAME_REFRESH_TIME));
-							continue;
-						}
-
-						if (tokens[0].find("MASTER") != std::string::npos) {
-							movePacMan(boost::lexical_cast<int>(tokens[1]),
-									boost::lexical_cast<int>(tokens[2]));
-						}
-						if (tokens[0].find("DIAMOND") != std::string::npos) {
-							removeDiamond(boost::lexical_cast<int>(tokens[1]),
-									boost::lexical_cast<int>(tokens[2]));
-						}
+						deserializeSlave(command);
 					} catch (boost::bad_any_cast &e) {
 						gameAssert(!"Wrong element type");
 					}
 				}
 			} else {
-				mvprintw(GAME_ROWS - 1, TOTAL_COLS - 2, "M"); //TODO usun¹c - debug print
+				mvprintw(GAME_ROWS - 1, TOTAL_COLS - 2, "M");
 				refresh();
 				//Gra znajduje siê w trybie master
 				if (!gate_) {
@@ -790,51 +871,15 @@ void thd::GameEngine::operator()() {
 					boost::any_cast<boost::none_t>(slaveMove);
 				} catch (boost::bad_any_cast &e) {
 					try {
-						mtfifo::TCPIPSerialized slaveCommand = boost::any_cast<
-								mtfifo::TCPIPSerialized>(slaveMove);
+						mtfifo::TCPIPSerialized serializedMag
+							= boost::any_cast<mtfifo::TCPIPSerialized>(slaveMove);
+						std::string serialized = serializedMag.serialized;
+						deserializeMaster(serialized);
 
-						std::string slaveString = slaveCommand.serialized;
-
-						std::vector<std::string> tokens1;
-						boost::split(tokens1, slaveString,
-								boost::is_any_of(" "));
-
-						log.put(
-								boost::any(
-										mtfifo::LogElement(slaveString + " SS",
-												critical,
-												boost::this_thread::get_id())));
-
-						if (tokens1.size() < 2) {
-							boost::this_thread::sleep_for(
-									boost::chrono::milliseconds(
-											GAME_REFRESH_TIME));
-							continue;
-						}
-
-						if (tokens1[0].find("SLAVE") != std::string::npos) {
-
-							if (tokens1[1].find("UP") != std::string::npos) {
-								moveGhost(-1, 0, ghost1Diamond_);
-							}
-
-							if (tokens1[1].find("DOWN") != std::string::npos) {
-								moveGhost(1, 0, ghost1Diamond_);
-							}
-
-							if (tokens1[1].find("LEFT") != std::string::npos) {
-								moveGhost(0, -1, ghost1Diamond_);
-							}
-
-							if (tokens1[1].find("RIGHT") != std::string::npos) {
-								moveGhost(0, 1, ghost1Diamond_);
-							}
-
-							boost::trim(slaveString);
-							std::string slaveEcho = std::string(slaveString);
-							boost::any echo = mtfifo::TCPIPSerialized(slaveEcho);
-							output.put(echo);
-						}
+						boost::trim(serialized);
+						std::string echoString = std::string(serialized);
+						boost::any echo = mtfifo::TCPIPSerialized(echoString);
+						output.put(echo);
 					} catch (boost::bad_any_cast &e) {
 						gameAssert(!"Recived bad type");
 					}
@@ -851,7 +896,12 @@ void thd::GameEngine::operator()() {
 		}
 		boost::this_thread::sleep_for(
 				boost::chrono::milliseconds(GAME_REFRESH_TIME));
-	}
+	}//While
 	endwin();
 	isNcursesMode = false;
+}
+
+
+thd::GameEngine::~GameEngine(){
+
 }
