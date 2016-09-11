@@ -10,7 +10,7 @@
 const int thd::TCPIPThreadSender::GAME_SEND_PORT = 3098;
 const int thd::TCPIPThreadSender::MAX_ERROR_COUNTER = 15; //Arbitralnie dobrana wielkoœc
 const bool thd::TCPIPThreadSender::BLOCKING_MODE = true;
-const char* SERVER_ADDRESS = "127.0.0.1";
+const char *thd::TCPIPThreadSender::SERVER_ADDRESS = "127.0.0.1";
 
 void thd::TCPIPThreadSender::senderInit() {
 #ifdef __WIN32__

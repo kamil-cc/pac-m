@@ -58,7 +58,7 @@ namespace thd{
 	private:
 		//Konfiguracja po³¹czenia wychodz¹cego
 		static const int GAME_SEND_PORT;
-		const char* SERVER_ADDRESS;
+		static const char *SERVER_ADDRESS;
 		//Konfiguracja socketów
 		static const int MAX_ERROR_COUNTER;
 		static const bool BLOCKING_MODE;
