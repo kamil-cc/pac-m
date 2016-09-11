@@ -31,7 +31,7 @@ void thd::LoggingThread::loggingInit() {
 	//W tym miejscu mo¿na regulowac poziom intensywnoœci loga.
 	boost::log::core::get()->set_filter(
 			boost::log::expressions::attr<severity_log_level>("Severity")
-					>= /*normal*/warning);
+					>= normal);
 	//Log do pliku
 	boost::log::add_file_log(boost::log::keywords::file_name = "game.log",
 			boost::log::keywords::format = "%Severity% %Message%",
@@ -65,7 +65,7 @@ void thd::LoggingThread::operator()() {
 	boost::random::mt19937 rng;
 	boost::random::uniform_int_distribution<> ten(1, 10);
 
-	while (1) {
+	while(1){
 		boost::any elem = input.get();
 		try {
 			mtfifo::LogElement logElement = boost::any_cast<mtfifo::LogElement>(
