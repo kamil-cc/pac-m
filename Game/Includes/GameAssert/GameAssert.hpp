@@ -22,9 +22,7 @@ extern bool isNcursesMode;
 			endwin(); \
 			isNcursesMode = false; \
 		} \
-		std::string str(#expr); \
-		std::cout << "Assertion Failed: " << str << std::endl; \
-		exit(-1); \
+		assert(expr); \
 	}while(0)
 
 
