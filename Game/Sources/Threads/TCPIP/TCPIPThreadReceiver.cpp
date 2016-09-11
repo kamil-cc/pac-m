@@ -19,7 +19,7 @@ void thd::TCPIPThreadReceiver::receiverInit() {
 	std::memset(&client_, 0, sizeof(client_));
 	std::memset(buffer_, 0, sizeof(buffer_));
 
-	if ((receiverFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if ((receiverFd_ = socket(AF_INET, SOCK_TYPE, 0)) < 0)
 		gameAssert(!"socked failed");
 
 	if (setsockopt(receiverFd_, SOL_SOCKET, SO_REUSEADDR, &optval_,

@@ -29,7 +29,7 @@ void thd::TCPIPThreadSender::senderInit() {
 			sizeof(struct in_addr), AF_INET)) == NULL)
 		gameAssert(!"gethostbyaddr failed");
 
-	if ((socketFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if ((socketFd_ = socket(AF_INET, SOCK_TYPE, 0)) < 0)
 		gameAssert(!"socket failed");
 
 	if (!setBlockingMode(socketFd_, BLOCKING_MODE))
