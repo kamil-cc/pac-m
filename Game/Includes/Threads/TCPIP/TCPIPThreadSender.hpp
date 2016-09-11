@@ -31,14 +31,15 @@ extern "C" {
 #include <boost/none.hpp>
 #include <boost/none_t.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
 
 //App
+#include <Threads/TCPIP/TCPIPThreadReceiver.hpp>
 #include <GameAssert/GameAssert.hpp>
 
 namespace thd{
 	//Konfiguracja po³¹czenia wychodz¹cego
 	const int GAME_SEND_PORT = 3097; //TODO wyrzucic do sk³adowej static
-	const char* SERVER_ADDRESS = "127.0.0.1";
 	const int MAX_ERROR_COUNTER = 15; //Arbitralnie dobrana wielkoœc
 	const bool BLOCKING_MODE = true;
 	//const int BUFFER_SIZE = 1024; //Ju¿ zdefiniowano w pliku: TCPIPThreadReceiver.hpp
@@ -56,6 +57,7 @@ namespace thd{
 			WSAStartup(versionWanted, &wsaData);
 #endif
 		    std::memset(&ipv4addr_, 0, sizeof(ipv4addr_));
+		    const char* SERVER_ADDRESS = "127.0.0.1"; //TODOTODO!!!
 #ifdef __WIN32__
 		    inet_pton(AF_INET, SERVER_ADDRESS, &ipv4addr_);
 #else
@@ -178,7 +180,7 @@ namespace thd{
 						++errorCounter_;
 						boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
 						if(errorCounter_ < MAX_ERROR_COUNTER){
-							close(socketFd_);
+							//close(socketFd_); //TODOTODO!!!
 							gameAssert(!"send failed"); //TODO To zakoñczy program w momencie roz³¹czenia
 						}
 					}else{
@@ -192,7 +194,7 @@ namespace thd{
 				//TODO tu prze³¹czyc w tryb nieblokuj¹cy
 				boost::this_thread::sleep_for(TCPIP_SENDER_TIME * 2);
 		    }//while
-			close(socketFd_);
+			//close(socketFd_); //TODOTODO!!!
 		}
 
 		virtual ~TCPIPThreadSender(){ //TODO wstawic do pliku cpp
