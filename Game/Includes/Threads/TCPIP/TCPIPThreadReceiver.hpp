@@ -38,12 +38,12 @@
 #include <MtFIFO/FIFODistributor.hpp>
 #include <MtFIFO/Names.hpp>
 #include <MtFIFO/Types.hpp>
+#include <Threads/TCPIP/TCPIPInternalConfig.hpp>
 #include <Threads/ThreadNames.hpp>
 #include <Threads/ThreadRegistration.hpp>
 #include <Threads/ThreadTime.hpp>
 
 namespace thd{
-	const int BUFFER_SIZE = 1024;
 	/**
 	 * Klasa zawieraj¹ca obs³ugê wejœciowego stosu internetowego
 	 */
