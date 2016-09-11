@@ -35,7 +35,7 @@ extern "C" {
 
 namespace thd{
 	//Konfiguracja po³¹czenia wychodz¹cego
-	const int GAME_SEND_PORT = 3098; //TODO wyrzucic do sk³adowej static
+	const int GAME_SEND_PORT = 3097; //TODO wyrzucic do sk³adowej static
 	const char* SERVER_ADDRESS = "127.0.0.1";
 	const int MAX_ERROR_COUNTER = 15; //Arbitralnie dobrana wielkoœc
 	const bool BLOCKING_MODE = true;

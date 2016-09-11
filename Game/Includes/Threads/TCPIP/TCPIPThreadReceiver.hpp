@@ -21,7 +21,6 @@
 #endif
 
 //Std
-#include <cassert>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -34,11 +33,12 @@
 #include <boost/lexical_cast.hpp>
 
 //App
+#include <GameAssert/GameAssert.hpp>
 #include <MtFIFO/FIFODistributor.hpp>
 
 namespace thd{
 	//Konfiguracja po³¹czenia przychodz¹cego
-	const int GAME_LISTEN_PORT = 3097; //TODO wyrzucic do pliku cpp i zrobic ustawialne
+	const int GAME_LISTEN_PORT = 3098; //TODO wyrzucic do pliku cpp i zrobic ustawialne
 	const int BUFFER_SIZE = 1024;
 
 	/**
@@ -57,10 +57,10 @@ namespace thd{
 			std::memset(buffer_, 0, sizeof(buffer_));
 
 			if((receiverFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-				assert(!"socked failed");
+				gameAssert(!"socked failed");
 
 			if(setsockopt(receiverFd_, SOL_SOCKET, SO_REUSEADDR, &optval_, sizeof(optval_)) < 0)
-				assert(!"setsockopt failed");
+				gameAssert(!"setsockopt failed");
 
 			//Ustawianie sockaddr_in
 			receiverIn_.sin_family = AF_INET;
@@ -68,18 +68,18 @@ namespace thd{
 			receiverIn_.sin_addr.s_addr = INADDR_ANY; //Przyjmuj wszystkie adresy.
 
 			if(bind(receiverFd_, (struct sockaddr*)&receiverIn_, sizeof(struct sockaddr)) < 0)
-				assert(!"bind failed");
+				gameAssert(!"bind failed");
 
 			//http://tangentsoft.net/wskfaq/advanced.html#backlog
 			if(listen(receiverFd_, SOMAXCONN) < 0)
-				assert(!"listen failed");
+				gameAssert(!"listen failed");
 
 			sizeSockaddrIn_ = sizeof(struct sockaddr_in);
 			closeFlag_ = false;
 			socketFlags_ = 0;
 
 			if(!setBlockingMode(receiverFd_, false))
-				assert(!"Failed to set nonblocking mode");
+				gameAssert(!"Failed to set nonblocking mode");
 		}
 
 		bool setBlockingMode(const int& socket, const bool blocking){ //TODO do pliku cpp
@@ -111,7 +111,7 @@ namespace thd{
 					boost::any_cast<mtfifo::ExitThread>(elem);
 					closeFlag_ = true;
 				}catch(boost::bad_any_cast &e){
-					assert(!"Unknown element type");
+					gameAssert(!"Unknown element type");
 				}
 			}
 		}
@@ -157,7 +157,7 @@ namespace thd{
 		        }
 
 		        if(!setBlockingMode(realReceiverFd_, false))
-		        	assert(!"Failed to set nonblocking mode, 2nd");
+		        	gameAssert(!"Failed to set nonblocking mode, 2nd");
 
 		        logMsg << normal;
 				logMsg << "accept wykonane poprawnie. Zwrócono: "

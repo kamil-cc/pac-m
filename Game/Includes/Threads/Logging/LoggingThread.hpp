@@ -29,6 +29,7 @@
 #include <boost/random.hpp>
 
 //App
+#include <GameAssert/GameAssert.hpp>
 #include <MtFIFO/FIFO.hpp>
 #include <MtFIFO/FIFODistributor.hpp>
 #include <MtFIFO/FIFOInput.hpp>
@@ -111,7 +112,7 @@ public:
 						boost::any_cast<mtfifo::ExitThread>(elem);
 						break;
 					}catch(boost::bad_any_cast &e){
-						assert(!"Unknown element type");
+						gameAssert(!"Unknown element type");
 					}
 				}
 			}
