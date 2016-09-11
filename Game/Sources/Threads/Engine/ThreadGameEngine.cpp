@@ -1,8 +1,8 @@
-/*
+/**
  * ThreadGameEngine.cpp
  *
  *  Created on: 8 wrz 2016
- *      Author: Kamil
+ *      Author: Kamil Burzyñski
  */
 
 #include <Threads/Engine/ThreadGameEngine.hpp>
