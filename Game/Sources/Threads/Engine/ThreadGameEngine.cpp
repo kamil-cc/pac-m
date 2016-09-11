@@ -830,7 +830,8 @@ void thd::GameEngine::operator()() {
 								moveGhost(0, 1, ghost1Diamond_);
 							}
 
-							std::string slaveEcho = slaveString;
+							boost::trim(slaveString);
+							std::string slaveEcho = std::string(slaveString);
 							boost::any echo = mtfifo::TCPIPSerialized(slaveEcho);
 							output.put(echo);
 						}
