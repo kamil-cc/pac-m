@@ -7,7 +7,7 @@
 
 #include <Threads/TCPIP/TCPIPThreadReceiver.hpp>
 
-const int thd::TCPIPThreadReceiver::GAME_LISTEN_PORT = 3097;
+const int thd::TCPIPThreadReceiver::GAME_LISTEN_PORT = 3098;
 
 void thd::TCPIPThreadReceiver::receiverInit() {
 #ifdef __WIN32__
@@ -143,8 +143,7 @@ void thd::TCPIPThreadReceiver::operator()() {
 					<< "Czekam na dane z socketa: "
 							+ boost::lexical_cast<std::string>(realReceiverFd_)
 							+ " na porcie: "
-							+ boost::lexical_cast<std::string>(
-									GAME_LISTEN_PORT);
+							+ boost::lexical_cast<std::string>(GAME_LISTEN_PORT);
 			log << logMsg;
 
 			recvResult_ = recv(realReceiverFd_, buffer_, BUFFER_SIZE,
