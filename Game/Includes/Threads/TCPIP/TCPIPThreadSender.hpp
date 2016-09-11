@@ -23,7 +23,6 @@ extern "C" {
 #endif
 
 //Std
-#include <cassert>
 #include <cstdlib>
 #include <string>
 
@@ -32,6 +31,9 @@ extern "C" {
 #include <boost/none.hpp>
 #include <boost/none_t.hpp>
 #include <boost/lexical_cast.hpp>
+
+//App
+#include <GameAssert/GameAssert.hpp>
 
 namespace thd{
 	//Konfiguracja po³¹czenia wychodz¹cego
@@ -62,13 +64,13 @@ namespace thd{
 
 		    if((host_ = gethostbyaddr((const char *)&ipv4addr_,
 		    		sizeof(struct in_addr), AF_INET)) == NULL)
-		    	assert(!"gethostbyaddr failed");
+		    	gameAssert(!"gethostbyaddr failed");
 
 		    if((socketFd_ = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		    	assert(!"socket failed");
+		    	gameAssert(!"socket failed");
 
 		    if(!setBlockingMode(socketFd_, BLOCKING_MODE))
-		    	assert("setBlockingMode failed, 2nd");
+		    	gameAssert("setBlockingMode failed, 2nd");
 
 		    std::memset(&server_, 0, sizeof(server_));
 		    server_.sin_family = AF_INET;
@@ -103,7 +105,7 @@ namespace thd{
 					boost::any_cast<mtfifo::ExitThread>(elem);
 					closeFlag_ = true;
 				}catch(boost::bad_any_cast &e){
-					assert(!"Unknown element type");
+					gameAssert(!"Unknown element type");
 				}
 			}
 		}
@@ -163,10 +165,10 @@ namespace thd{
 							//Gwarancja, ¿e jest null terminated
 							const char *message = msgToSend.serialized.c_str();
 							if((std::strlen(message) + 1) > BUFFER_SIZE)
-								assert(!"serialized message is too big");
+								gameAssert(!"serialized message is too big");
 							std::strcpy(buffer_, message);
 						}catch(boost::bad_any_cast &e){
-							assert(!"Unknown element type");
+							gameAssert(!"Unknown element type");
 						}
 					}
 					if((send(socketFd_, buffer_, strlen(buffer_), 0)) < 0){
@@ -177,7 +179,7 @@ namespace thd{
 						boost::this_thread::sleep_for(TCPIP_SENDER_TIME);
 						if(errorCounter_ < MAX_ERROR_COUNTER){
 							close(socketFd_);
-							assert(!"send failed"); //TODO To zakoñczy program w momencie roz³¹czenia
+							gameAssert(!"send failed"); //TODO To zakoñczy program w momencie roz³¹czenia
 						}
 					}else{
 						errorCounter_ = 0;

@@ -79,6 +79,7 @@ void thd::GameEngine::printArena(const arena_t& arena) {
 
 void thd::GameEngine::initEngine() {
 	initscr();
+	isNcursesMode = true;
 	cbreak();
 	noecho();
 	timeout(0); //timeout(GAME_REFRESH_TIME.count()); //B³yskawicznie zwracaj getchar
@@ -101,16 +102,13 @@ void thd::GameEngine::initEngine() {
 	curs_set(0);
 	getmaxyx(stdscr, maxRows, maxCols);
 	if ((maxRows == 0) || (maxRows < GAME_ROWS)) {
-		endwin();
-		assert(!"Wrong rows num");
+		gameAssert(!"Wrong rows num");
 	}
 	if ((maxCols == 0) || (maxCols < TOTAL_COLS)) {
-		endwin();
-		assert(!"Wrong cols num");
+		gameAssert(!"Wrong cols num");
 	}
 	if (resize_term(GAME_ROWS, TOTAL_COLS) == ERR) {
-		endwin();
-		assert(!"resize_term failed");
+		gameAssert(!"resize_term failed");
 	}
 	printHelloInfo();
 	printArena(startingArena_);
@@ -627,7 +625,7 @@ void thd::GameEngine::operator()() {
 							gameStarted_ = true;
 						}
 					} catch (boost::bad_any_cast &e) {
-						assert(!"Unknown element type");
+						gameAssert(!"Unknown element type");
 					}
 				}
 			}
@@ -761,8 +759,7 @@ void thd::GameEngine::operator()() {
 									boost::lexical_cast<int>(tokens[2]));
 						}
 					} catch (boost::bad_any_cast &e) {
-						endwin();
-						assert(!"Wrong element type");
+						gameAssert(!"Wrong element type");
 					}
 				}
 			} else {
@@ -838,8 +835,7 @@ void thd::GameEngine::operator()() {
 							output.put(echo);
 						}
 					} catch (boost::bad_any_cast &e) {
-						endwin();
-						assert(!"Recived bad type");
+						gameAssert(!"Recived bad type");
 					}
 				}
 			}
@@ -856,4 +852,5 @@ void thd::GameEngine::operator()() {
 				boost::chrono::milliseconds(GAME_REFRESH_TIME));
 	}
 	endwin();
+	isNcursesMode = false;
 }

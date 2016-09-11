@@ -19,6 +19,9 @@
 #include <boost/noncopyable.hpp>
 #include <boost/none.hpp>
 
+//App
+#include <GameAssert/GameAssert.hpp>
+
 namespace mtfifo{
 
 class FIFOImplementation : private boost::noncopyable,

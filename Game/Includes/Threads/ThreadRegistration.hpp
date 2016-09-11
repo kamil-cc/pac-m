@@ -18,6 +18,9 @@
 #include <boost/thread/lockable_adapter.hpp>
 #include <boost/thread/mutex.hpp>
 
+//App
+#include <GameAssert/GameAssert.hpp>
+
 namespace thd{
 
 class ThreadRegistration : private boost::noncopyable,
@@ -39,14 +42,14 @@ public:
     	std::pair<std::map<const boost::thread::id, const std::string>::iterator, bool> res  =
     			map_.insert(std::pair<const boost::thread::id, const std::string>(id, key));
     	if(!res.second)
-    		assert(!"Double registration");
+    		gameAssert(!"Double registration");
     }
 
     std::string getName(const boost::thread::id& id){ //TODO do pliku cpp
     	boost::lock_guard<ThreadRegistration> guard(*this);
     	std::map<const boost::thread::id, const std::string>::iterator it;
     	if((it = map_.find(id)) == map_.end())
-    		assert(!"No such id");
+    		gameAssert(!"No such id");
     	return it->second;
     }
 private:

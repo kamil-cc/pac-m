@@ -9,14 +9,23 @@
 #define GAME_INCLUDES_GAMEASSERT_GAMEASSERT_HPP_
 
 #include <cassert>
+#include <string>
+#include <iostream>
 #include <ncursesw/ncurses.h>
 
+extern bool isNcursesMode;
 
+// https://gcc.gnu.org/onlinedocs/cpp/Stringification.html
 #define gameAssert(expr) \
 	do{ \
-		clear(); \
-		assert(expr); \
-	}while(0) \
+		if(isNcursesMode){ \
+			endwin(); \
+			isNcursesMode = false; \
+		} \
+		std::string str(#expr); \
+		std::cout << "Assertion Failed: " << str << std::endl; \
+		exit(-1); \
+	}while(0)
 
 
 #endif /* GAME_INCLUDES_GAMEASSERT_GAMEASSERT_HPP_ */

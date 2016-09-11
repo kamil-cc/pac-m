@@ -15,6 +15,7 @@
 #include <boost/any.hpp>
 
 //App
+#include <GameAssert/GameAssert.hpp>
 #include <MtFIFO/FIFODistributor.hpp>
 #include <MtFIFO/FIFOImplementation.hpp>
 

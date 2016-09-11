@@ -29,7 +29,7 @@ boost::any mtfifo::FIFOImplementation::get(){
 void mtfifo::FIFOImplementation::put(boost::any elem){
 	boost::lock_guard<FIFOImplementation> guard(*this);
 	if(queue_.size() > MAX_QUEUE_SIZE)
-		assert(!"Queue is too big"); //zabezpieczenie
+		gameAssert(!"Queue is too big"); //zabezpieczenie
 	queue_.push(elem);
 }
 
