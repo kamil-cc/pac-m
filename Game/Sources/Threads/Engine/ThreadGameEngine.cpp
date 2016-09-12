@@ -716,6 +716,8 @@ void thd::GameEngine::operator()() {
 	bool timeFlag = false;
 	bool ghostsAreSleeping = true;
 
+	wait_ = GAME_REFRESH_TIME;
+
 	while (1) {
 		//Sekcja czytania z klawiatury
 		readedChar_ = getch();
@@ -843,10 +845,11 @@ void thd::GameEngine::operator()() {
 						gameAssert(!"Wrong element type");
 					}
 				}
+				wait_ = GAME_REFRESH_TIME / 2;
 			} else {
+				//Gra znajduje siê w trybie master
 				mvprintw(GAME_ROWS - 1, TOTAL_COLS - 2, "M");
 				refresh();
-				//Gra znajduje siê w trybie master
 				if (!gate_) {
 					for (int i = 21; i <= 28; ++i) {
 						removeDiamond(10, i);
@@ -894,8 +897,7 @@ void thd::GameEngine::operator()() {
 			callQuit();
 			break;
 		}
-		boost::this_thread::sleep_for(
-				boost::chrono::milliseconds(GAME_REFRESH_TIME));
+		boost::this_thread::sleep_for(boost::chrono::milliseconds(wait_));
 	}//While
 	endwin();
 	isNcursesMode = false;

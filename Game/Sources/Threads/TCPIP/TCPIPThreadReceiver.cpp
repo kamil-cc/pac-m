@@ -7,7 +7,7 @@
 
 #include <Threads/TCPIP/TCPIPThreadReceiver.hpp>
 
-const int thd::TCPIPThreadReceiver::GAME_LISTEN_PORT = 3098;
+const int thd::TCPIPThreadReceiver::GAME_LISTEN_PORT = 3097;
 
 void thd::TCPIPThreadReceiver::receiverInit() {
 #ifdef __WIN32__

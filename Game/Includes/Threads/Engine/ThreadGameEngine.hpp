@@ -1,4 +1,4 @@
-/*
+/**
  * ThreadGameEngine.hpp
  *
  *  Created on: 5 wrz 2016
@@ -157,6 +157,7 @@ private:
 	move_t ghost4Direction_;
 	//
 	bool gate_;
+	boost::chrono::milliseconds wait_;
 };
 
 }

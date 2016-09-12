@@ -7,7 +7,7 @@
 
 #include <Threads/TCPIP/TCPIPThreadSender.hpp>
 
-const int thd::TCPIPThreadSender::GAME_SEND_PORT = 3097;
+const int thd::TCPIPThreadSender::GAME_SEND_PORT = 3098;
 const int thd::TCPIPThreadSender::MAX_ERROR_COUNTER = 15; //Arbitralnie dobrana wielkoœc
 const bool thd::TCPIPThreadSender::BLOCKING_MODE = true;
 const char *thd::TCPIPThreadSender::SERVER_ADDRESS = "127.0.0.1";
