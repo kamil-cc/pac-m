@@ -1,0 +1,4 @@
+Copyright (C) Kamil Burzyński, All Rights Reserved
+Unauthorized copying of this files, via any medium is strictly prohibited.
+Proprietary and confidential.
+Written by Kamil Burzyński <kontakt@kamil.cc>, August 2019
