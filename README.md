@@ -5,7 +5,7 @@ Simple pac-man like game, using standard GNU/Linux terminal and network (sockets
 # Build
 Please use Eclipse Mars 2 or older with g++ or MinGW. Don't forget to check if your compiler supports `-std=gnu++11` option.
 
-#Platform
+# Platform
 On GNU/Linux you will need to have `ncurses` libraries and headers. On Windows please use `ncursesw` instedad.
 Also boost libraries with thread support are needed. 
 
